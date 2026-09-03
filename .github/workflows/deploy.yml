@@ -27,7 +27,7 @@ jobs:
       - name: Checkout Repository Code
         uses: actions/checkout@v6
 
-      - name: Install rsync
+      - name: Install rsync and SSH client
         shell: bash
         run: |
           set -euo pipefail
@@ -42,7 +42,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${SSH_PRIVATE_KEY}" ]; then
-            echo 'PRIVATE_KEY secret is empty or missing.'
+            echo 'SSH_PRIVATE_LMS_AELUONG secret is empty or missing.'
             exit 1
           fi
 
@@ -50,20 +50,34 @@ jobs:
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/godaddy_deploy_key
           chmod 600 ~/.ssh/godaddy_deploy_key
 
-          echo "Reading SSH host key from ${REMOTE_HOST}..."
-          ssh-keyscan -T 20 -H "${REMOTE_HOST}" | tee -a ~/.ssh/known_hosts
-          test -s ~/.ssh/known_hosts
-
       - name: Preflight GoDaddy SSH connection
         shell: bash
         run: |
           set -euo pipefail
 
           echo "Checking DNS for ${REMOTE_HOST}..."
-          getent hosts "${REMOTE_HOST}"
+          getent ahosts "${REMOTE_HOST}"
 
           echo "Checking SSH port 22 on ${REMOTE_HOST}..."
-          timeout 20 bash -c "cat < /dev/null > /dev/tcp/${REMOTE_HOST}/22"
+          if timeout 20 bash -c "cat < /dev/null > /dev/tcp/${REMOTE_HOST}/22"; then
+            echo 'SSH port 22 is reachable.'
+          else
+            echo "::error::Cannot connect to ${REMOTE_HOST}:22 from GitHub Actions. Check GoDaddy SSH/Git deployment access, host, or firewall."
+            exit 1
+          fi
+
+          echo "Reading SSH host key from ${REMOTE_HOST}..."
+          if ssh-keyscan -T 20 -p 22 -H "${REMOTE_HOST}" | tee ~/.ssh/known_hosts; then
+            true
+          else
+            echo "::error::ssh-keyscan failed for ${REMOTE_HOST}:22."
+            exit 1
+          fi
+
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::error::ssh-keyscan returned no host key for ${REMOTE_HOST}:22."
+            exit 1
+          fi
 
           echo "Checking SSH authentication for ${SSH_USER}@${REMOTE_HOST}..."
           ssh -i ~/.ssh/godaddy_deploy_key \

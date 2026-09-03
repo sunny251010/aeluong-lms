@@ -17,9 +17,9 @@ Thông tin deploy hiện tại:
 
 - `remote_host`: `1263004.us28.myftpupload.com`
 - `ssh_user`: `git_deployer_9c8da1f525_1263004`
-- GitHub Actions secret chứa private key: `PRIVATE_KEY`
+- GitHub Actions secret chứa private key: `SSH_PRIVATE_LMS_AELUONG`
 
-Không hardcode private key vào repo. Public key đã được add vào GoDaddy. Private key phải nằm trong GitHub repository secret `PRIVATE_KEY`.
+Không hardcode private key vào repo. Public key đã được add vào GoDaddy. Private key phải nằm trong GitHub repository secret `SSH_PRIVATE_LMS_AELUONG`.
 
 ## Workflow hiện tại
 
@@ -73,7 +73,7 @@ File này chỉ dùng để test pipeline ban đầu. Sau khi CI/CD ổn định
 
 Trong GitHub repository, vào `Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`:
 
-- Name: `PRIVATE_KEY`
+- Name: `SSH_PRIVATE_LMS_AELUONG`
 - Value: nội dung private key tương ứng với public key đã add vào GoDaddy.
 
 Không đưa private key vào file trong repo.
@@ -87,6 +87,12 @@ Với workflow rsync trực tiếp hiện tại:
 - `deployment_dest = /html/wp-content` nghĩa là deploy vào đúng thư mục WordPress content trên GoDaddy.
 - Không nhập `wp-content/wp-content`.
 - Không để trống nếu `source_path` vẫn là `wp-content`, vì như vậy có thể sync nội dung `wp-content` vào sai thư mục.
+
+## Troubleshooting SSH
+
+Nếu workflow fail ở `Reading SSH host key`, nghĩa là secret đã có nhưng GitHub Actions chưa lấy được host key từ `REMOTE_HOST:22`. Khi đó cần kiểm tra GoDaddy SSH/Git deployment đã bật đúng host, host có cho kết nối SSH public từ GitHub Actions hay không, và deploy user có đúng với public key đang active không.
+
+Nếu workflow fail ở `Checking SSH authentication`, nghĩa là kết nối SSH tới host đã tới nơi nhưng private key hoặc deploy user chưa khớp.
 
 ## Trạng thái hiện tại
 
