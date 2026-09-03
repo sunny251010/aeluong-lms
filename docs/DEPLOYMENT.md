@@ -22,17 +22,17 @@ Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 - Action: `godaddy-wordpress/gd-wordpress-deployer@v1`.
 - `remote_host`: `1263004.us28.myftpupload.com`.
 - `ssh_user`: `git_deployer_9c8da1f525_1263004`.
-- Secret đang dùng trong repo: `SSH_PRIVATE_LMS_AELUONG`.
+- Secret đang dùng trong repo: `PRIVATE_KEY`.
 - Workflow chỉ chạy thủ công bằng `workflow_dispatch`.
 - Input `deployment_dest` mặc định để trống đúng theo sample GoDaddy.
 
-Lưu ý: GoDaddy sample dùng `secrets.PRIVATE_KEY`. Repo này đang dùng tên rõ nghĩa hơn là `secrets.SSH_PRIVATE_LMS_AELUONG`, nên chỉ khác đúng tên secret.
+Lưu ý: GoDaddy sample dùng `secrets.PRIVATE_KEY`. Repo này đang dùng tên rõ nghĩa hơn là `secrets.PRIVATE_KEY`, nên chỉ khác đúng tên secret.
 
 ## GitHub secret cần có
 
 Trong GitHub repository, vào `Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`:
 
-- Name: `SSH_PRIVATE_LMS_AELUONG`
+- Name: `PRIVATE_KEY`
 - Value: nội dung private key tương ứng với public key đã add vào GoDaddy.
 
 Không đưa private key vào file trong repo.
