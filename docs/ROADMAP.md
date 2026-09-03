@@ -16,6 +16,7 @@ Trạng thái:
 - Đã có remote `origin`: `https://github.com/sunny251010/aeluong-lms.git`.
 - Branch `main` đang theo dõi `origin/main`.
 - Đã tạo GitHub Actions deploy thủ công theo sample GoDaddy qua `.github/workflows/deploy.yml`.
+- Đã xác định đúng SSH endpoint là `1263004.us28.ssh.myftpupload.com`; đang chờ bật SSH trên GoDaddy và kiểm chứng lần deploy đầu tiên.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 

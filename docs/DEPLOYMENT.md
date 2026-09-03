@@ -20,13 +20,23 @@ File workflow:
 Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 
 - Action: `godaddy-wordpress/gd-wordpress-deployer@v1`.
-- `remote_host`: `1263004.us28.myftpupload.com`.
+- `remote_host`: `1263004.us28.ssh.myftpupload.com` (hostname trong mục SSH/SFTP login của GoDaddy).
 - `ssh_user`: `git_deployer_d93c635f6a_1263004`.
 - Secret đang dùng trong repo: `PRIVATE_KEY`.
 - Workflow chỉ chạy thủ công bằng `workflow_dispatch`.
 - Input `deployment_dest` mặc định để trống đúng theo sample GoDaddy.
 
-Lưu ý: GoDaddy sample dùng `secrets.PRIVATE_KEY`. Repo này đang dùng tên rõ nghĩa hơn là `secrets.PRIVATE_KEY`, nên chỉ khác đúng tên secret.
+GoDaddy từng sinh sample với hostname website `1263004.us28.myftpupload.com`, nhưng hostname đó không phải SSH endpoint. Workflow phải dùng hostname hiển thị trong mục `SSH/SFTP login`, có segment `.ssh.`.
+
+## Điều kiện SSH/SFTP trên GoDaddy
+
+Trước khi chạy workflow:
+
+1. Vào GoDaddy -> Managed WordPress -> Settings -> Production Site -> SSH/SFTP login.
+2. Chọn `Tạo đăng nhập mới` và bật SSH.
+3. Xác nhận hostname là `1263004.us28.ssh.myftpupload.com` và port là `22`.
+
+Việc tạo login mới sẽ vô hiệu hóa thông tin SFTP cũ. Username/password SFTP mới không dùng trong workflow này; workflow vẫn xác thực bằng deploy user và `PRIVATE_KEY` của CI/CD integration.
 
 ## GitHub secret cần có
 
@@ -68,6 +78,7 @@ Nếu không thấy file, cần đọc log deploy để xác định GoDaddy act
 
 ## Trạng thái hiện tại
 
-- Đã quay lại workflow theo sample GoDaddy.
+- Đã đổi `remote_host` sang đúng SSH/SFTP hostname do GoDaddy hiển thị.
+- Cần bật SSH trong GoDaddy trước khi chạy lại workflow.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
 - Chưa có custom theme/plugin/homepage để làm thay đổi giao diện hosting.
