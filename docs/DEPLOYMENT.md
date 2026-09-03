@@ -2,24 +2,14 @@
 
 ## Tổng quan
 
-Dự án deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions qua SSH/rsync.
+Dự án deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions và workflow sample do GoDaddy cung cấp.
 
 Môi trường:
 
 - Local development: LocalWP.
 - Version control: GitHub.
 - Hosting: GoDaddy WordPress Hosting.
-- Deploy mechanism: GitHub Actions qua SSH và rsync.
-
-## Thông tin GoDaddy SSH
-
-Thông tin deploy hiện tại:
-
-- `remote_host`: `1263004.us28.myftpupload.com`
-- `ssh_user`: `git_deployer_9c8da1f525_1263004`
-- GitHub Actions secret chứa private key: `SSH_PRIVATE_LMS_AELUONG`
-
-Không hardcode private key vào repo. Public key đã được add vào GoDaddy. Private key phải nằm trong GitHub repository secret `SSH_PRIVATE_LMS_AELUONG`.
+- Deploy mechanism: GoDaddy GitHub Action qua SSH/rsync.
 
 ## Workflow hiện tại
 
@@ -27,47 +17,16 @@ File workflow:
 
 `.github/workflows/deploy.yml`
 
-Workflow chỉ chạy thủ công bằng `workflow_dispatch`, không tự deploy khi push.
+Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 
-Input mặc định:
+- Action: `godaddy-wordpress/gd-wordpress-deployer@v1`.
+- `remote_host`: `1263004.us28.myftpupload.com`.
+- `ssh_user`: `git_deployer_9c8da1f525_1263004`.
+- Secret đang dùng trong repo: `SSH_PRIVATE_LMS_AELUONG`.
+- Workflow chỉ chạy thủ công bằng `workflow_dispatch`.
+- Input `deployment_dest` mặc định để trống đúng theo sample GoDaddy.
 
-- `source_path`: `wp-content`
-- `deployment_dest`: `/html/wp-content`
-
-Workflow hiện dùng rsync trực tiếp thay vì `godaddy-wordpress/gd-wordpress-deployer@v1` vì GoDaddy composite action đang fail ở sub-step `Create Env variables` và không log rõ nguyên nhân. Cách rsync trực tiếp vẫn dùng SSH user/key do GoDaddy cấp, nhưng tách từng bước để debug rõ hơn.
-
-Các bước chính:
-
-- Checkout code từ GitHub.
-- Cài `rsync` và `openssh-client`.
-- Ghi private key từ GitHub secret vào file tạm trên runner.
-- Lấy SSH host key bằng `ssh-keyscan`.
-- Preflight DNS, port 22 và SSH authentication.
-- Rsync nội dung `wp-content/` lên `/html/wp-content/`.
-- Verify marker file sau deploy.
-
-## Nguyên tắc an toàn
-
-- Deploy thủ công bằng GitHub Actions trước.
-- Không deploy database.
-- Không deploy uploads.
-- Không hardcode secret.
-- Không dùng `--delete`, nên workflow không xóa file trên server khi file bị xóa khỏi repo.
-- Không ghi đè WordPress core.
-
-## Test CI/CD bằng marker file
-
-Repo có file marker:
-
-`wp-content/aeluong-deploy-test.txt`
-
-Sau khi commit, push và chạy workflow, mở URL sau trên domain hosting:
-
-`https://1263004.us28.myftpupload.com/wp-content/aeluong-deploy-test.txt`
-
-Nếu thấy nội dung `AELuong deploy test` thì CI/CD đã deploy được file từ GitHub lên GoDaddy.
-
-File này chỉ dùng để test pipeline ban đầu. Sau khi CI/CD ổn định, có thể xóa file marker này ở một commit riêng.
+Lưu ý: GoDaddy sample dùng `secrets.PRIVATE_KEY`. Repo này đang dùng tên rõ nghĩa hơn là `secrets.SSH_PRIVATE_LMS_AELUONG`, nên chỉ khác đúng tên secret.
 
 ## GitHub secret cần có
 
@@ -78,24 +37,37 @@ Trong GitHub repository, vào `Settings` -> `Secrets and variables` -> `Actions`
 
 Không đưa private key vào file trong repo.
 
-## Khi nào đổi deployment_dest?
+## Cách chạy deploy thủ công
 
-Chỉ đổi khi đã kiểm tra chắc path thật trên server.
+1. Commit và push workflow lên GitHub branch `main`.
+2. Vào tab `Actions`.
+3. Chọn workflow `Deploy WordPress to GoDaddy via rsync`.
+4. Bấm `Run workflow`.
+5. Lần đầu để `deployment_dest` trống đúng theo sample GoDaddy.
+6. Xem log của step `Synchronize Files with GoDaddy WordPress Hosting Server`.
 
-Với workflow rsync trực tiếp hiện tại:
+## Test CI/CD bằng marker file
 
-- `deployment_dest = /html/wp-content` nghĩa là deploy vào đúng thư mục WordPress content trên GoDaddy.
-- Không nhập `wp-content/wp-content`.
-- Không để trống nếu `source_path` vẫn là `wp-content`, vì như vậy có thể sync nội dung `wp-content` vào sai thư mục.
+Repo có file marker:
 
-## Troubleshooting SSH
+`wp-content/aeluong-deploy-test.txt`
 
-Nếu workflow fail ở `Reading SSH host key`, nghĩa là secret đã có nhưng GitHub Actions chưa lấy được host key từ `REMOTE_HOST:22`. Khi đó cần kiểm tra GoDaddy SSH/Git deployment đã bật đúng host, host có cho kết nối SSH public từ GitHub Actions hay không, và deploy user có đúng với public key đang active không.
+Sau khi deploy thành công, nếu GoDaddy action deploy root repo vào WordPress root, marker sẽ nằm ở:
 
-Nếu workflow fail ở `Checking SSH authentication`, nghĩa là kết nối SSH tới host đã tới nơi nhưng private key hoặc deploy user chưa khớp.
+`https://1263004.us28.myftpupload.com/wp-content/aeluong-deploy-test.txt`
+
+Nếu không thấy file, cần đọc log deploy để xác định GoDaddy action đã sync source/destination nào.
+
+## Nguyên tắc an toàn
+
+- Không deploy database.
+- Không deploy uploads.
+- Không hardcode secret.
+- Không tự chạy deployment production từ local.
+- Không chỉnh WordPress core trong repo.
 
 ## Trạng thái hiện tại
 
-- Đã tạo workflow deploy thủ công bằng rsync trực tiếp.
+- Đã quay lại workflow theo sample GoDaddy.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
-- Chưa deploy database hoặc uploads.
+- Chưa có custom theme/plugin/homepage để làm thay đổi giao diện hosting.

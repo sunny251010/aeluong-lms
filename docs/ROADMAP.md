@@ -15,7 +15,7 @@ Trạng thái:
 - Initial commit đã có.
 - Đã có remote `origin`: `https://github.com/sunny251010/aeluong-lms.git`.
 - Branch `main` đang theo dõi `origin/main`.
-- Đã tạo GitHub Actions deploy thủ công bằng rsync trực tiếp qua `.github/workflows/deploy.yml`.
+- Đã tạo GitHub Actions deploy thủ công theo sample GoDaddy qua `.github/workflows/deploy.yml`.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 
@@ -28,7 +28,7 @@ Thứ tự đề xuất:
 5. Tạo homepage tối giản, query course từ LearnPress.
 6. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access.
 7. Thêm Zalo contact và footer cơ bản.
-8. Test GitHub Actions deploy thủ công bằng `workflow_dispatch` với `source_path = wp-content` và `deployment_dest = /html/wp-content`.
+8. Test GitHub Actions deploy thủ công bằng `workflow_dispatch`, lần đầu để `deployment_dest` trống theo sample GoDaddy.
 9. Cập nhật README/docs sau mỗi thay đổi.
 
 ## Phase 2 - Lesson authoring
