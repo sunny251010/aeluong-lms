@@ -32,6 +32,45 @@ jobs:
       - name: Checkout Repository Code
         uses: actions/checkout@v6
 
+      - name: Preflight GoDaddy SSH connection
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          REMOTE_HOST='1263004.us28.myftpupload.com'
+          SSH_USER='git_deployer_9c8da1f525_1263004'
+
+          cleanup() {
+            rm -f /tmp/godaddy_private_key /tmp/godaddy_known_hosts
+          }
+          trap cleanup EXIT
+
+          if [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo 'PRIVATE_KEY secret is empty or missing.'
+            exit 1
+          fi
+
+          echo "Checking DNS for ${REMOTE_HOST}..."
+          getent hosts "${REMOTE_HOST}"
+
+          echo "Checking SSH port 22 on ${REMOTE_HOST}..."
+          timeout 20 bash -c "cat < /dev/null > /dev/tcp/${REMOTE_HOST}/22"
+
+          echo "Reading SSH host key from ${REMOTE_HOST}..."
+          ssh-keyscan -T 20 -H "${REMOTE_HOST}" | tee /tmp/godaddy_known_hosts
+          test -s /tmp/godaddy_known_hosts
+
+          echo "Checking SSH authentication for ${SSH_USER}@${REMOTE_HOST}..."
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > /tmp/godaddy_private_key
+          chmod 600 /tmp/godaddy_private_key
+          ssh -i /tmp/godaddy_private_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=20 \
+            "${SSH_USER}@${REMOTE_HOST}" 'exit'
+
       - name: Synchronize Files with GoDaddy WordPress Hosting Server
         uses: godaddy-wordpress/gd-wordpress-deployer@v1
         with:

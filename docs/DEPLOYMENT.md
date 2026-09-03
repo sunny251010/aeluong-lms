@@ -33,6 +33,15 @@ File workflow:
 
 Workflow chỉ chạy thủ công bằng `workflow_dispatch`, không tự deploy khi push.
 
+Trước khi gọi GoDaddy deploy action, workflow có bước `Preflight GoDaddy SSH connection` để kiểm tra rõ từng điểm dễ lỗi:
+
+- GitHub secret `PRIVATE_KEY` có tồn tại.
+- DNS của GoDaddy host resolve được.
+- Cổng SSH 22 mở.
+- `ssh-keyscan` lấy được host key.
+- SSH authentication hoạt động với deploy user.
+
+
 Input mặc định:
 
 - `source_path`: `wp-content`
