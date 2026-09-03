@@ -40,12 +40,12 @@ Deployment dự kiến dùng GitHub Actions với GoDaddy action:
 
 Nguyên tắc:
 
-- Deploy thủ công bằng `workflow_dispatch` trước.
+- Deploy thủ công bằng `.github/workflows/deploy.yml` và `workflow_dispatch` trước.
 - Dùng GitHub secret `PRIVATE_KEY`.
 - Không deploy database.
 - Không deploy uploads.
 - Không hardcode private key hoặc secrets.
-- Chưa bật destructive sync/delete.
+- Chưa bật destructive sync/delete. Workflow đang dùng `cleanup_deleted_files: no`.
 
 Xem thêm: `docs/DEPLOYMENT.md`.
 

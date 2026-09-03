@@ -2,7 +2,7 @@
 
 ## Tổng quan
 
-Dự án dự kiến deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions.
+Dự án deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions và GoDaddy rsync deploy action.
 
 Môi trường:
 
@@ -13,53 +13,83 @@ Môi trường:
 
 ## GoDaddy deploy action
 
-GoDaddy cung cấp action mẫu:
+Workflow dùng:
 
 `godaddy-wordpress/gd-wordpress-deployer@v1`
 
-Thông tin deploy hiện có:
+Thông tin deploy hiện tại:
 
-- `remote_host`: `92c.53d.myftpupload.com`
-- `ssh_user`: `git_deployer_c2090012c8_816125`
+- `remote_host`: `1263004.us28.myftpupload.com`
+- `ssh_user`: `git_deployer_9c8da1f525_1263004`
 - GitHub Actions secret chứa private key: `PRIVATE_KEY`
 
-Không hardcode private key vào repo.
+Không hardcode private key vào repo. Public key đã được add vào GoDaddy. Private key phải nằm trong GitHub repository secret `PRIVATE_KEY`.
 
-## Nguyên tắc workflow
+## Workflow hiện tại
 
-Giai đoạn đầu chỉ nên dùng:
+File workflow:
 
-- `workflow_dispatch` để deploy thủ công.
-- Không tự deploy mỗi lần push cho tới khi pipeline được kiểm chứng.
+`.github/workflows/deploy.yml`
+
+Workflow chỉ chạy thủ công bằng `workflow_dispatch`, không tự deploy khi push.
+
+Input mặc định:
+
+- `source_path`: `wp-content`
+- `deployment_dest`: `wp-content`
+- `enable_health_check`: `yes`
+
+Lý do dùng `source_path = wp-content` và `deployment_dest = wp-content`:
+
+- Repo không track WordPress core.
+- Repo có docs và README, không cần deploy lên web root.
+- Nội dung bên trong local `wp-content/` sẽ được sync vào `/html/wp-content/` trên GoDaddy.
+- Tránh lỗi lồng path kiểu `wp-content/wp-content/`.
+
+## Nguyên tắc an toàn
+
+- Deploy thủ công bằng GitHub Actions trước.
 - Không deploy database.
 - Không deploy uploads.
-- Không bật destructive sync/delete nếu chưa được yêu cầu.
-- Không ghi đè file ngoài phạm vi custom code cần thiết.
+- Không hardcode secret.
+- `cleanup_deleted_files` đang để `no`, không xóa file trên server khi file bị xóa khỏi repo.
+- Không ghi đè WordPress core.
 
-## Target path cần xác nhận
+## Cách chạy deploy thủ công
 
-Trước khi tạo `.github/workflows/deploy.yml`, cần kiểm tra đường dẫn thật trên GoDaddy.
-
-Điểm cần tránh:
-
-`wp-content/wp-content/`
-
-Ví dụ, nếu repo chỉ chứa custom code nằm dưới `wp-content/plugins/aeluong-site-core/`, workflow nên deploy đúng folder plugin vào đúng thư mục plugin trên server, không copy cả root WordPress install nếu không cần.
+1. Push code lên GitHub branch `main`.
+2. Vào GitHub repository: `https://github.com/sunny251010/aeluong-lms`.
+3. Vào tab `Actions`.
+4. Chọn workflow `Deploy WordPress to GoDaddy via rsync`.
+5. Bấm `Run workflow`.
+6. Giữ input mặc định trong lần test đầu:
+   - `source_path`: `wp-content`
+   - `deployment_dest`: `wp-content`
+   - `enable_health_check`: `yes`
+7. Chạy workflow và xem log.
 
 ## GitHub secret cần có
 
-- `PRIVATE_KEY`: SSH private key do GoDaddy cung cấp.
+Trong GitHub repository, vào `Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`:
 
-Không commit:
+- Name: `PRIVATE_KEY`
+- Value: nội dung private key tương ứng với public key đã add vào GoDaddy.
 
-- SSH private key.
-- Password.
-- API secret.
-- OAuth client secret.
-- Database dump có dữ liệu thật.
+Không đưa private key vào file trong repo.
+
+## Khi nào đổi deployment_dest?
+
+Chỉ đổi khi đã kiểm tra chắc path thật trên server.
+
+GoDaddy action hiểu `deployment_dest` là đường dẫn tương đối dưới `/html`. Vì vậy:
+
+- `deployment_dest = wp-content` nghĩa là deploy vào `/html/wp-content`.
+- Không nhập `/html/wp-content`.
+- Không nhập `wp-content/wp-content`.
+- Không để trống nếu `source_path` vẫn là `wp-content`, vì như vậy có thể sync nội dung `wp-content` vào web root.
 
 ## Trạng thái hiện tại
 
-- Chưa tạo workflow deploy.
+- Đã tạo workflow deploy thủ công.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
-- Cần xác nhận repository GitHub và target path trên GoDaddy trước khi deploy.
+- Chưa chạy deployment production trong máy local.

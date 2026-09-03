@@ -1,0 +1,44 @@
+name: Deploy WordPress to GoDaddy via rsync
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_path:
+        description: 'Local repository path to deploy'
+        required: false
+        default: 'wp-content'
+      deployment_dest:
+        description: 'Target WordPress directory on GoDaddy, relative to /html'
+        required: false
+        default: 'wp-content'
+      enable_health_check:
+        description: 'Enable WordPress health check?'
+        type: choice
+        required: false
+        default: 'yes'
+        options:
+          - 'yes'
+          - 'no'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to GoDaddy WordPress Hosting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v6
+
+      - name: Synchronize Files with GoDaddy WordPress Hosting Server
+        uses: godaddy-wordpress/gd-wordpress-deployer@v1
+        with:
+          remote_host: '1263004.us28.myftpupload.com'
+          ssh_user: 'git_deployer_9c8da1f525_1263004'
+          ssh_private_key: ${{ secrets.PRIVATE_KEY }}
+          source_path: ${{ github.event.inputs.source_path }}
+          deployment_dest: ${{ github.event.inputs.deployment_dest }}
+          cleanup_deleted_files: 'no'
+          enable_health_check: ${{ github.event.inputs.enable_health_check }}
