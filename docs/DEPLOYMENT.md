@@ -77,6 +77,20 @@ Lý do dùng `source_path = wp-content` và `deployment_dest = wp-content`:
    - `enable_health_check`: `yes`
 7. Chạy workflow và xem log.
 
+## Test CI/CD bằng marker file
+
+Để kiểm tra workflow deploy có thật sự sync file lên GoDaddy hay chưa, repo có file marker:
+
+`wp-content/aeluong-deploy-test.txt`
+
+Sau khi commit, push và chạy workflow, mở URL sau trên domain hosting:
+
+`https://domain-cua-ban.com/wp-content/aeluong-deploy-test.txt`
+
+Nếu thấy nội dung `AELuong deploy test` thì CI/CD đã deploy được file từ GitHub lên GoDaddy.
+
+File này chỉ dùng để test pipeline ban đầu. Sau khi CI/CD ổn định, có thể xóa file marker này ở một commit riêng.
+
 ## GitHub secret cần có
 
 Trong GitHub repository, vào `Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`:

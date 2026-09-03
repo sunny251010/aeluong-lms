@@ -1,0 +1,2 @@
+AELuong deploy test
+Deployed from GitHub Actions to GoDaddy wp-content.
