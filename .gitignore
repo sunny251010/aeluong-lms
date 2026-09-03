@@ -2,6 +2,12 @@
 /wp-config.php
 /local-*.php
 /.htaccess
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
 
 # WordPress core files. Keep the repository focused on custom project code.
 /index.php
@@ -16,6 +22,8 @@
 /wp-content/uploads/
 /wp-content/cache/
 /wp-content/upgrade/
+/wp-content/backups/
+/wp-content/ai1wm-backups/
 /wp-content/backup*/
 /wp-content/debug.log
 *.log
@@ -27,6 +35,15 @@
 
 # Default WordPress themes installed by core
 /wp-content/themes/twentytwenty*/
+
+# Third-party plugins/themes should normally be installed through WP Admin or deployment docs.
+# When custom code is added, whitelist only the project-owned folders, for example:
+# /wp-content/plugins/*
+# !/wp-content/plugins/index.php
+# !/wp-content/plugins/aeluong-site-core/
+# /wp-content/themes/*
+# !/wp-content/themes/index.php
+# !/wp-content/themes/aeluong-child/
 
 # Dependency and build artifacts
 node_modules/

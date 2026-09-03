@@ -16,6 +16,7 @@ Không được:
 
 
 Khi code: 
+- nhớ commit bằng tiếng việt nhé, từ chuyên ngành thì giữ nguyên 
 - Giải thích lý do vì sao làm vậy?
 - Hãy tự tạo data để tự test, làm như 1 người dùng thật vào wp-admin, hoặc truy cập local xem website, làm sao cho nó ổn nhất có thể
 
