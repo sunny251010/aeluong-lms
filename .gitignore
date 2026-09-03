@@ -1,0 +1,42 @@
+# Local WordPress configuration and generated files
+/wp-config.php
+/local-*.php
+/.htaccess
+
+# WordPress core files. Keep the repository focused on custom project code.
+/index.php
+/license.txt
+/readme.html
+/wp-*.php
+/xmlrpc.php
+/wp-admin/
+/wp-includes/
+
+# User uploads, cache, backups, and local runtime artifacts
+/wp-content/uploads/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/backup*/
+/wp-content/debug.log
+*.log
+*.sql
+*.sql.gz
+*.zip
+*.tar
+*.tar.gz
+
+# Default WordPress themes installed by core
+/wp-content/themes/twentytwenty*/
+
+# Dependency and build artifacts
+node_modules/
+vendor/
+dist/
+build/
+.cache/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
