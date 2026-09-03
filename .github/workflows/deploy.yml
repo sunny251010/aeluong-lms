@@ -24,6 +24,6 @@ jobs:
         uses: godaddy-wordpress/gd-wordpress-deployer@v1
         with:
           remote_host: '1263004.us28.myftpupload.com'
-          ssh_user: 'git_deployer_9c8da1f525_1263004'
+          ssh_user: 'git_deployer_d93c635f6a_1263004'
           ssh_private_key: ${{ secrets.PRIVATE_KEY }}
           deployment_dest: ${{ github.event.inputs.deployment_dest }}

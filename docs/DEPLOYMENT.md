@@ -21,7 +21,7 @@ Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 
 - Action: `godaddy-wordpress/gd-wordpress-deployer@v1`.
 - `remote_host`: `1263004.us28.myftpupload.com`.
-- `ssh_user`: `git_deployer_9c8da1f525_1263004`.
+- `ssh_user`: `git_deployer_d93c635f6a_1263004`.
 - Secret đang dùng trong repo: `PRIVATE_KEY`.
 - Workflow chỉ chạy thủ công bằng `workflow_dispatch`.
 - Input `deployment_dest` mặc định để trống đúng theo sample GoDaddy.
