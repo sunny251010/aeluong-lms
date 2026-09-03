@@ -37,7 +37,7 @@ jobs:
       - name: Configure SSH key
         shell: bash
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_LMS_AELUONG }}
         run: |
           set -euo pipefail
 
