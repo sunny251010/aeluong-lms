@@ -2,20 +2,16 @@
 
 ## Tổng quan
 
-Dự án deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions và GoDaddy rsync deploy action.
+Dự án deploy từ GitHub lên GoDaddy WordPress Hosting bằng GitHub Actions qua SSH/rsync.
 
 Môi trường:
 
 - Local development: LocalWP.
 - Version control: GitHub.
 - Hosting: GoDaddy WordPress Hosting.
-- Deploy mechanism: GitHub Actions qua SSH.
+- Deploy mechanism: GitHub Actions qua SSH và rsync.
 
-## GoDaddy deploy action
-
-Workflow dùng:
-
-`godaddy-wordpress/gd-wordpress-deployer@v1`
+## Thông tin GoDaddy SSH
 
 Thông tin deploy hiện tại:
 
@@ -33,27 +29,22 @@ File workflow:
 
 Workflow chỉ chạy thủ công bằng `workflow_dispatch`, không tự deploy khi push.
 
-Trước khi gọi GoDaddy deploy action, workflow có bước `Preflight GoDaddy SSH connection` để kiểm tra rõ từng điểm dễ lỗi:
-
-- GitHub secret `PRIVATE_KEY` có tồn tại.
-- DNS của GoDaddy host resolve được.
-- Cổng SSH 22 mở.
-- `ssh-keyscan` lấy được host key.
-- SSH authentication hoạt động với deploy user.
-
-
 Input mặc định:
 
 - `source_path`: `wp-content`
-- `deployment_dest`: `wp-content`
-- `enable_health_check`: `yes`
+- `deployment_dest`: `/html/wp-content`
 
-Lý do dùng `source_path = wp-content` và `deployment_dest = wp-content`:
+Workflow hiện dùng rsync trực tiếp thay vì `godaddy-wordpress/gd-wordpress-deployer@v1` vì GoDaddy composite action đang fail ở sub-step `Create Env variables` và không log rõ nguyên nhân. Cách rsync trực tiếp vẫn dùng SSH user/key do GoDaddy cấp, nhưng tách từng bước để debug rõ hơn.
 
-- Repo không track WordPress core.
-- Repo có docs và README, không cần deploy lên web root.
-- Nội dung bên trong local `wp-content/` sẽ được sync vào `/html/wp-content/` trên GoDaddy.
-- Tránh lỗi lồng path kiểu `wp-content/wp-content/`.
+Các bước chính:
+
+- Checkout code từ GitHub.
+- Cài `rsync` và `openssh-client`.
+- Ghi private key từ GitHub secret vào file tạm trên runner.
+- Lấy SSH host key bằng `ssh-keyscan`.
+- Preflight DNS, port 22 và SSH authentication.
+- Rsync nội dung `wp-content/` lên `/html/wp-content/`.
+- Verify marker file sau deploy.
 
 ## Nguyên tắc an toàn
 
@@ -61,31 +52,18 @@ Lý do dùng `source_path = wp-content` và `deployment_dest = wp-content`:
 - Không deploy database.
 - Không deploy uploads.
 - Không hardcode secret.
-- `cleanup_deleted_files` đang để `no`, không xóa file trên server khi file bị xóa khỏi repo.
+- Không dùng `--delete`, nên workflow không xóa file trên server khi file bị xóa khỏi repo.
 - Không ghi đè WordPress core.
-
-## Cách chạy deploy thủ công
-
-1. Push code lên GitHub branch `main`.
-2. Vào GitHub repository: `https://github.com/sunny251010/aeluong-lms`.
-3. Vào tab `Actions`.
-4. Chọn workflow `Deploy WordPress to GoDaddy via rsync`.
-5. Bấm `Run workflow`.
-6. Giữ input mặc định trong lần test đầu:
-   - `source_path`: `wp-content`
-   - `deployment_dest`: `wp-content`
-   - `enable_health_check`: `yes`
-7. Chạy workflow và xem log.
 
 ## Test CI/CD bằng marker file
 
-Để kiểm tra workflow deploy có thật sự sync file lên GoDaddy hay chưa, repo có file marker:
+Repo có file marker:
 
 `wp-content/aeluong-deploy-test.txt`
 
 Sau khi commit, push và chạy workflow, mở URL sau trên domain hosting:
 
-`https://domain-cua-ban.com/wp-content/aeluong-deploy-test.txt`
+`https://1263004.us28.myftpupload.com/wp-content/aeluong-deploy-test.txt`
 
 Nếu thấy nội dung `AELuong deploy test` thì CI/CD đã deploy được file từ GitHub lên GoDaddy.
 
@@ -104,15 +82,14 @@ Không đưa private key vào file trong repo.
 
 Chỉ đổi khi đã kiểm tra chắc path thật trên server.
 
-GoDaddy action hiểu `deployment_dest` là đường dẫn tương đối dưới `/html`. Vì vậy:
+Với workflow rsync trực tiếp hiện tại:
 
-- `deployment_dest = wp-content` nghĩa là deploy vào `/html/wp-content`.
-- Không nhập `/html/wp-content`.
+- `deployment_dest = /html/wp-content` nghĩa là deploy vào đúng thư mục WordPress content trên GoDaddy.
 - Không nhập `wp-content/wp-content`.
-- Không để trống nếu `source_path` vẫn là `wp-content`, vì như vậy có thể sync nội dung `wp-content` vào web root.
+- Không để trống nếu `source_path` vẫn là `wp-content`, vì như vậy có thể sync nội dung `wp-content` vào sai thư mục.
 
 ## Trạng thái hiện tại
 
-- Đã tạo workflow deploy thủ công.
+- Đã tạo workflow deploy thủ công bằng rsync trực tiếp.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
-- Chưa chạy deployment production trong máy local.
+- Chưa deploy database hoặc uploads.

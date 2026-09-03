@@ -8,17 +8,9 @@ on:
         required: false
         default: 'wp-content'
       deployment_dest:
-        description: 'Target WordPress directory on GoDaddy, relative to /html'
+        description: 'Target server directory on GoDaddy'
         required: false
-        default: 'wp-content'
-      enable_health_check:
-        description: 'Enable WordPress health check?'
-        type: choice
-        required: false
-        default: 'yes'
-        options:
-          - 'yes'
-          - 'no'
+        default: '/html/wp-content'
 
 permissions:
   contents: read
@@ -27,30 +19,45 @@ jobs:
   deploy:
     name: Deploy to GoDaddy WordPress Hosting
     runs-on: ubuntu-latest
+    env:
+      REMOTE_HOST: '1263004.us28.myftpupload.com'
+      SSH_USER: 'git_deployer_9c8da1f525_1263004'
 
     steps:
       - name: Checkout Repository Code
         uses: actions/checkout@v6
 
-      - name: Preflight GoDaddy SSH connection
+      - name: Install rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -q
+          sudo apt-get install -y rsync openssh-client
+
+      - name: Configure SSH key
         shell: bash
         env:
           SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
           set -euo pipefail
 
-          REMOTE_HOST='1263004.us28.myftpupload.com'
-          SSH_USER='git_deployer_9c8da1f525_1263004'
-
-          cleanup() {
-            rm -f /tmp/godaddy_private_key /tmp/godaddy_known_hosts
-          }
-          trap cleanup EXIT
-
           if [ -z "${SSH_PRIVATE_KEY}" ]; then
             echo 'PRIVATE_KEY secret is empty or missing.'
             exit 1
           fi
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/godaddy_deploy_key
+          chmod 600 ~/.ssh/godaddy_deploy_key
+
+          echo "Reading SSH host key from ${REMOTE_HOST}..."
+          ssh-keyscan -T 20 -H "${REMOTE_HOST}" | tee -a ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts
+
+      - name: Preflight GoDaddy SSH connection
+        shell: bash
+        run: |
+          set -euo pipefail
 
           echo "Checking DNS for ${REMOTE_HOST}..."
           getent hosts "${REMOTE_HOST}"
@@ -58,26 +65,62 @@ jobs:
           echo "Checking SSH port 22 on ${REMOTE_HOST}..."
           timeout 20 bash -c "cat < /dev/null > /dev/tcp/${REMOTE_HOST}/22"
 
-          echo "Reading SSH host key from ${REMOTE_HOST}..."
-          ssh-keyscan -T 20 -H "${REMOTE_HOST}" | tee /tmp/godaddy_known_hosts
-          test -s /tmp/godaddy_known_hosts
-
           echo "Checking SSH authentication for ${SSH_USER}@${REMOTE_HOST}..."
-          printf '%s\n' "${SSH_PRIVATE_KEY}" > /tmp/godaddy_private_key
-          chmod 600 /tmp/godaddy_private_key
-          ssh -i /tmp/godaddy_private_key \
+          ssh -i ~/.ssh/godaddy_deploy_key \
             -o BatchMode=yes \
-            -o StrictHostKeyChecking=no \
+            -o StrictHostKeyChecking=yes \
             -o ConnectTimeout=20 \
-            "${SSH_USER}@${REMOTE_HOST}" 'exit'
+            "${SSH_USER}@${REMOTE_HOST}" 'pwd && ls -la /html | head'
 
-      - name: Synchronize Files with GoDaddy WordPress Hosting Server
-        uses: godaddy-wordpress/gd-wordpress-deployer@v1
-        with:
-          remote_host: '1263004.us28.myftpupload.com'
-          ssh_user: 'git_deployer_9c8da1f525_1263004'
-          ssh_private_key: ${{ secrets.PRIVATE_KEY }}
-          source_path: ${{ github.event.inputs.source_path }}
-          deployment_dest: ${{ github.event.inputs.deployment_dest }}
-          cleanup_deleted_files: 'no'
-          enable_health_check: ${{ github.event.inputs.enable_health_check }}
+      - name: Synchronize files to GoDaddy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SOURCE_PATH='${{ github.event.inputs.source_path }}'
+          DEST_PATH='${{ github.event.inputs.deployment_dest }}'
+
+          SOURCE_PATH="${SOURCE_PATH#/}"
+          SOURCE_PATH="${SOURCE_PATH%/}"
+          DEST_PATH="/${DEST_PATH#/}"
+          DEST_PATH="${DEST_PATH%/}"
+
+          if [ ! -d "${SOURCE_PATH}" ]; then
+            echo "Source directory does not exist: ${SOURCE_PATH}"
+            exit 1
+          fi
+
+          echo "Source: ${SOURCE_PATH}/"
+          echo "Destination: ${SSH_USER}@${REMOTE_HOST}:${DEST_PATH}/"
+
+          ssh -i ~/.ssh/godaddy_deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "${SSH_USER}@${REMOTE_HOST}" "mkdir -p '${DEST_PATH}'"
+
+          rsync -avz --checksum --itemize-changes \
+            --exclude 'uploads/' \
+            --exclude 'cache/' \
+            --exclude 'upgrade/' \
+            --exclude 'backups/' \
+            --exclude 'ai1wm-backups/' \
+            --exclude 'debug.log' \
+            -e "ssh -i ~/.ssh/godaddy_deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            "${SOURCE_PATH}/" \
+            "${SSH_USER}@${REMOTE_HOST}:${DEST_PATH}/"
+
+      - name: Verify deploy marker
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEST_PATH='${{ github.event.inputs.deployment_dest }}'
+          DEST_PATH="/${DEST_PATH#/}"
+          DEST_PATH="${DEST_PATH%/}"
+          MARKER_PATH="${DEST_PATH}/aeluong-deploy-test.txt"
+
+          echo "Checking marker: ${MARKER_PATH}"
+          ssh -i ~/.ssh/godaddy_deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "${SSH_USER}@${REMOTE_HOST}" "test -f '${MARKER_PATH}' && cat '${MARKER_PATH}'"
