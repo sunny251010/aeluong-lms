@@ -21,7 +21,8 @@ Trạng thái:
 - Kadence parent theme đã được cài và active ở local và production.
 - Local và production đã được đồng bộ cơ bản về WordPress, PHP, Kadence, LearnPress, permalink và site title.
 - Đã tạo dữ liệu LMS test thật trên local gồm course, section, lesson và hai subscriber.
-- Đã tạo child theme lms-kadence-child; cần active thủ công trên từng môi trường sau khi deploy.
+- Đã tạo child theme lms-kadence-child và active trên local; production cần active sau khi deploy.
+- Đã tạo và active custom plugin lms-site-core trên local; production cần active sau khi deploy.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 
@@ -31,8 +32,8 @@ Thứ tự đề xuất:
 2. Kiểm tra/cài LearnPress thủ công trong WordPress Admin nếu chưa có.
 3. Tạo dữ liệu test gồm course, section, lesson và user có/không có quyền học.
 4. Deploy child theme lms-kadence-child, sau đó active thủ công trên local và production; không sửa Kadence parent.
-5. Chỉ tạo plugin `aeluong-site-core` khi có business logic thật sự cần.
-6. Tạo homepage tối giản, query course từ LearnPress.
+5. Deploy và active plugin lms-site-core; chỉ bổ sung business logic khi có yêu cầu thật sự cần.
+6. Kiểm tra homepage chuyển tới course archive và query course từ LearnPress.
 7. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access.
 8. Thêm Zalo contact và footer cơ bản.
 9. Deploy production từng thay đổi nhỏ bằng GitHub Actions và kiểm tra smoke test.

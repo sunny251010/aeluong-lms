@@ -28,7 +28,7 @@ Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 - `deployment_dest`: `wp-content`.
 - `cleanup_deleted_files`: `no`.
 
-Workflow chỉ deploy phần `wp-content` do project quản lý, không deploy WordPress core hoặc docs ra root hosting. Cơ chế tự xóa file trên server được tắt vì repository không chứa toàn bộ plugin/theme/runtime của site. Child theme lms-kadence-child được track trong Git và sẽ được upload cùng wp-content, còn Kadence parent và LearnPress vẫn được quản lý như third-party code.
+Workflow chỉ deploy phần wp-content do project quản lý, không deploy WordPress core hoặc docs ra root hosting. Cơ chế tự xóa file trên server được tắt vì repository không chứa toàn bộ plugin/theme/runtime của site. Child theme lms-kadence-child và custom plugin lms-site-core được track trong Git và sẽ được upload cùng wp-content, còn Kadence parent và LearnPress vẫn được quản lý như third-party code.
 
 GoDaddy từng sinh sample với hostname website `1263004.us28.myftpupload.com`, nhưng hostname đó không phải SSH endpoint. Workflow phải dùng hostname hiển thị trong mục `SSH/SFTP login`, có segment `.ssh.`.
 
@@ -74,8 +74,9 @@ Sau khi workflow deploy thành công:
 
 1. Vào WordPress Admin của local, mở Appearance -> Themes.
 2. Active LMS Kadence Child, rồi kiểm tra homepage và một course.
-3. Thực hiện thao tác tương tự trên production khi sẵn sàng.
-4. Việc active theme là trạng thái database riêng của từng môi trường, không được đồng bộ bằng Git.
+3. Vào Plugins, active LMS Site Core nếu plugin chưa active.
+4. Thực hiện thao tác tương tự trên production sau khi workflow deploy thành công.
+5. Việc active theme/plugin là trạng thái database riêng của từng môi trường, không được đồng bộ bằng Git.
 
 ## Nguyên tắc an toàn
 
@@ -90,5 +91,5 @@ Sau khi workflow deploy thành công:
 - Đã đổi `remote_host` sang đúng SSH/SFTP hostname do GoDaddy hiển thị.
 - Cần bật SSH trong GoDaddy trước khi chạy lại workflow.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
-- Child theme lms-kadence-child đã có trong repository; sau khi deploy cần active thủ công trên từng môi trường.
-- Chưa có custom plugin/homepage để làm thay đổi giao diện hosting.
+- Child theme lms-kadence-child và custom plugin lms-site-core đã có trong repository; sau khi deploy cần active thủ công trên từng môi trường.
+- Homepage production chưa đổi cho tới khi plugin được active trên production.

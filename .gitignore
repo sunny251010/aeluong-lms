@@ -41,8 +41,8 @@ id_ed25519
 !/wp-content/themes/lms-kadence-child/**
 /wp-content/plugins/*
 !/wp-content/plugins/index.php
-!/wp-content/plugins/aeluong-site-core/
-!/wp-content/plugins/aeluong-site-core/**
+!/wp-content/plugins/lms-site-core/
+!/wp-content/plugins/lms-site-core/**
 
 # Dependency and build artifacts
 node_modules/

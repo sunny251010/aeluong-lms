@@ -59,4 +59,5 @@ Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/funct
 ## DB change gần nhất
 
 - Local database đã thay đổi do tạo course, section, lesson, hai user test và một enrollment LearnPress.
-- Không tạo custom table và không commit database dump.
+- Custom plugin lms-site-core không tạo custom table hoặc migration.
+- Không commit database dump.

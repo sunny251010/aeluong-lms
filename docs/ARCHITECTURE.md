@@ -43,18 +43,17 @@ wp-content/themes/lms-kadence-child/
 
 Child theme chỉ kế thừa Kadence và enqueue stylesheet của parent trước stylesheet của child. Không đặt business logic LMS vào child theme. Kadence parent vẫn được giữ nguyên.
 
-## Custom plugin dự kiến
+## Custom plugin
 
-Nếu cần business logic riêng, plugin dự kiến:
+Plugin project-owned hiện tại:
 
-`wp-content/plugins/aeluong-site-core/`
+`wp-content/plugins/lms-site-core/`
 
-Plugin này chỉ nên chứa logic mà LearnPress hoặc theme không nên xử lý, ví dụ:
+Plugin này chỉ chứa behavior riêng của website mà LearnPress hoặc theme không nên xử lý:
 
-- Helper liên quan đến access control.
-- Integration tối thiểu với LearnPress.
-- Custom shortcode/block.
-- Business rule riêng của website.
+- Redirect homepage về course archive native của LearnPress.
+- Ẩn các mục Checkout/Instructor khỏi navigation trong giai đoạn học viên.
+- Giữ nguyên các page và route phụ để có thể bật lại sau này.
 
 Không tự xây lại các phần LearnPress đã hỗ trợ như course, lesson, section, enrollment và progress.
 
@@ -62,6 +61,7 @@ Không tự xây lại các phần LearnPress đã hỗ trợ như course, lesso
 
 Homepage cần giữ tối giản:
 
+- Homepage / chuyển tới course archive native /courses/.
 - Course list lấy từ dữ liệu LearnPress, không hardcode.
 - Course card gồm tên khóa học, mô tả ngắn, thumbnail nếu có và nút "Học ngay".
 - Zalo contact.
@@ -101,6 +101,7 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 
 - Kadence parent theme đã được cài và active ở local và production.
 - Child theme lms-kadence-child đã được tạo trong repository; trạng thái active vẫn được quản lý riêng trên từng môi trường.
-- LearnPress đã được cài và active ở local và production theo kiểm tra hiện tại; chưa có custom plugin.
+- LearnPress đã được cài và active ở local và production theo kiểm tra hiện tại.
+- Custom plugin lms-site-core đã được tạo và active ở local; cần deploy và active riêng trên production.
 - Git ignore third-party themes/plugins; chỉ whitelist child theme và custom plugin do project sở hữu.
 - Git đang được cấu hình để track tài liệu và custom code, không track WordPress core, config local, uploads hoặc cache.

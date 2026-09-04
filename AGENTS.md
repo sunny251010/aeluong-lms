@@ -30,5 +30,6 @@ Sau khi code:
 - báo route mới
 - báo cách test
 - Hướng dẫn tôi tự active (plugins hoặc cái khác)trên wp-admin nếu có
+- Nếu thay đổi có liên quan đến deploy, theme, plugin hoặc cấu hình môi trường, sau khi hoàn tất phải hướng dẫn tôi thao tác tương ứng trên hosting/production, gồm deploy, active và smoke test nếu cần
 - Tự động cập nhật thêm các file trong folder docs khi thay đổi
 - gợi ý commit github
