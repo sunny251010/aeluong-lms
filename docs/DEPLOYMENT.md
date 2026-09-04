@@ -24,7 +24,11 @@ Workflow đang bám sát sample GoDaddy cung cấp trong CI/CD panel:
 - `ssh_user`: `git_deployer_d93c635f6a_1263004`.
 - Secret đang dùng trong repo: `PRIVATE_KEY`.
 - Workflow chỉ chạy thủ công bằng `workflow_dispatch`.
-- Input `deployment_dest` mặc định để trống đúng theo sample GoDaddy.
+- `source_path`: `wp-content`.
+- `deployment_dest`: `wp-content`.
+- `cleanup_deleted_files`: `no`.
+
+Workflow chỉ deploy phần `wp-content` do project quản lý, không deploy WordPress core hoặc docs ra root hosting. Cơ chế tự xóa file trên server được tắt vì repository không chứa toàn bộ plugin/theme/runtime của site. Child theme lms-kadence-child được track trong Git và sẽ được upload cùng wp-content, còn Kadence parent và LearnPress vẫn được quản lý như third-party code.
 
 GoDaddy từng sinh sample với hostname website `1263004.us28.myftpupload.com`, nhưng hostname đó không phải SSH endpoint. Workflow phải dùng hostname hiển thị trong mục `SSH/SFTP login`, có segment `.ssh.`.
 
@@ -53,20 +57,25 @@ Không đưa private key vào file trong repo.
 2. Vào tab `Actions`.
 3. Chọn workflow `Deploy WordPress to GoDaddy via rsync`.
 4. Bấm `Run workflow`.
-5. Lần đầu để `deployment_dest` trống đúng theo sample GoDaddy.
+5. Workflow tự dùng `wp-content` làm source và destination, không cần nhập target.
 6. Xem log của step `Synchronize Files with GoDaddy WordPress Hosting Server`.
 
 ## Test CI/CD bằng marker file
 
-Repo có file marker:
+File marker `wp-content/aeluong-deploy-test.txt` đã được dùng để xác nhận pipeline và đã xóa sau khi kiểm thử thành công. Khi cần kiểm tra lại, có thể tạo một marker tạm trong `wp-content`, deploy, kiểm tra URL rồi xóa marker sau đó.
 
-`wp-content/aeluong-deploy-test.txt`
+Vì workflow hiện chỉ deploy `wp-content`, URL kiểm tra sẽ có dạng:
 
-Sau khi deploy thành công, nếu GoDaddy action deploy root repo vào WordPress root, marker sẽ nằm ở:
+`https://1263004.us28.myftpupload.com/wp-content/<ten-file>`
 
-`https://1263004.us28.myftpupload.com/wp-content/aeluong-deploy-test.txt`
+## Kích hoạt child theme
 
-Nếu không thấy file, cần đọc log deploy để xác định GoDaddy action đã sync source/destination nào.
+Sau khi workflow deploy thành công:
+
+1. Vào WordPress Admin của local, mở Appearance -> Themes.
+2. Active LMS Kadence Child, rồi kiểm tra homepage và một course.
+3. Thực hiện thao tác tương tự trên production khi sẵn sàng.
+4. Việc active theme là trạng thái database riêng của từng môi trường, không được đồng bộ bằng Git.
 
 ## Nguyên tắc an toàn
 
@@ -81,4 +90,5 @@ Nếu không thấy file, cần đọc log deploy để xác định GoDaddy act
 - Đã đổi `remote_host` sang đúng SSH/SFTP hostname do GoDaddy hiển thị.
 - Cần bật SSH trong GoDaddy trước khi chạy lại workflow.
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
-- Chưa có custom theme/plugin/homepage để làm thay đổi giao diện hosting.
+- Child theme lms-kadence-child đã có trong repository; sau khi deploy cần active thủ công trên từng môi trường.
+- Chưa có custom plugin/homepage để làm thay đổi giao diện hosting.

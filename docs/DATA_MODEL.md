@@ -44,6 +44,19 @@ Luồng quyền học dự kiến:
 
 Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/functions/capabilities của LearnPress.
 
+## Dữ liệu test local
+
+Đã tạo trên local database để kiểm tra luồng LMS:
+
+- Course: C++ Cơ bản - Nền tảng lập trình (post ID 13).
+- Section: Làm quen với C++ (section ID 1).
+- Lesson: Biến và kiểu dữ liệu trong C++ (post ID 16), đã gắn vào section.
+- User lms_student_allowed (subscriber) đã được enroll vào course để kiểm tra luồng học.
+- User lms_student_pending (subscriber) chưa được enroll để kiểm tra trạng thái chưa có quyền học.
+
+Đây là dữ liệu local phục vụ kiểm thử, không được đưa vào Git hoặc deploy sang production.
+
 ## DB change gần nhất
 
-- Không có thay đổi database.
+- Local database đã thay đổi do tạo course, section, lesson, hai user test và một enrollment LearnPress.
+- Không tạo custom table và không commit database dump.

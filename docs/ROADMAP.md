@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase hiện tại: Phase 0 - Chuẩn bị source control và tài liệu
+## Phase hiện tại: Phase 1 - Đồng bộ môi trường và nền tảng WordPress/LearnPress
 
 Mục tiêu:
 
@@ -16,21 +16,27 @@ Trạng thái:
 - Đã có remote `origin`: `https://github.com/sunny251010/aeluong-lms.git`.
 - Branch `main` đang theo dõi `origin/main`.
 - Đã tạo GitHub Actions deploy thủ công theo sample GoDaddy qua `.github/workflows/deploy.yml`.
-- Đã xác định đúng SSH endpoint là `1263004.us28.ssh.myftpupload.com`; đang chờ bật SSH trên GoDaddy và kiểm chứng lần deploy đầu tiên.
+- Đã xác định đúng SSH endpoint là `1263004.us28.ssh.myftpupload.com` và kiểm chứng deploy thành công.
+- Đã khóa workflow chỉ deploy `wp-content` và tắt xóa file tự động trên hosting.
+- Kadence parent theme đã được cài và active ở local và production.
+- Local và production đã được đồng bộ cơ bản về WordPress, PHP, Kadence, LearnPress, permalink và site title.
+- Đã tạo dữ liệu LMS test thật trên local gồm course, section, lesson và hai subscriber.
+- Đã tạo child theme lms-kadence-child; cần active thủ công trên từng môi trường sau khi deploy.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 
 Thứ tự đề xuất:
 
-1. Audit repository.
+1. Audit repository và đối chiếu WordPress/PHP/Kadence/plugin/permalink/site URL/timezone giữa local và production.
 2. Kiểm tra/cài LearnPress thủ công trong WordPress Admin nếu chưa có.
-3. Chọn hướng giao diện: custom theme hoặc child theme.
-4. Chỉ tạo plugin `lms-site-core` khi có business logic thật sự cần.
-5. Tạo homepage tối giản, query course từ LearnPress.
-6. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access.
-7. Thêm Zalo contact và footer cơ bản.
-8. Test GitHub Actions deploy thủ công bằng `workflow_dispatch`, lần đầu để `deployment_dest` trống theo sample GoDaddy.
-9. Cập nhật README/docs sau mỗi thay đổi.
+3. Tạo dữ liệu test gồm course, section, lesson và user có/không có quyền học.
+4. Deploy child theme lms-kadence-child, sau đó active thủ công trên local và production; không sửa Kadence parent.
+5. Chỉ tạo plugin `aeluong-site-core` khi có business logic thật sự cần.
+6. Tạo homepage tối giản, query course từ LearnPress.
+7. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access.
+8. Thêm Zalo contact và footer cơ bản.
+9. Deploy production từng thay đổi nhỏ bằng GitHub Actions và kiểm tra smoke test.
+10. Cập nhật README/docs sau mỗi thay đổi.
 
 ## Phase 2 - Lesson authoring
 

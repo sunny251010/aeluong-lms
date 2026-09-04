@@ -2,11 +2,6 @@ name: Deploy WordPress to GoDaddy via rsync
 
 on:
   workflow_dispatch:
-    inputs:
-      deployment_dest:
-        description: 'Target server directory, leave blank for root directory'
-        required: false
-        default: ''
 
 permissions:
   contents: read
@@ -26,4 +21,6 @@ jobs:
           remote_host: '1263004.us28.ssh.myftpupload.com'
           ssh_user: 'git_deployer_d93c635f6a_1263004'
           ssh_private_key: ${{ secrets.PRIVATE_KEY }}
-          deployment_dest: ${{ github.event.inputs.deployment_dest }}
+          source_path: 'wp-content'
+          deployment_dest: 'wp-content'
+          cleanup_deleted_files: 'no'

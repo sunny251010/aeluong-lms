@@ -35,6 +35,14 @@ Không làm ở giai đoạn này:
 - Ưu tiên tận dụng WordPress/LearnPress trước khi custom.
 - Tránh over-engineering, ưu tiên code đơn giản, dễ debug, ít dependency.
 
+## Child theme
+
+Child theme project:
+
+wp-content/themes/lms-kadence-child/
+
+Child theme chỉ kế thừa Kadence và enqueue stylesheet của parent trước stylesheet của child. Không đặt business logic LMS vào child theme. Kadence parent vẫn được giữ nguyên.
+
 ## Custom plugin dự kiến
 
 Nếu cần business logic riêng, plugin dự kiến:
@@ -91,7 +99,8 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 
 ## Trạng thái hiện tại
 
-- Chưa có LearnPress trong `wp-content/plugins`.
-- Chưa có custom plugin/theme.
-- `wp-content/themes` hiện chỉ có các theme mặc định `twentytwenty*`.
+- Kadence parent theme đã được cài và active ở local và production.
+- Child theme lms-kadence-child đã được tạo trong repository; trạng thái active vẫn được quản lý riêng trên từng môi trường.
+- LearnPress đã được cài và active ở local và production theo kiểm tra hiện tại; chưa có custom plugin.
+- Git ignore third-party themes/plugins; chỉ whitelist child theme và custom plugin do project sở hữu.
 - Git đang được cấu hình để track tài liệu và custom code, không track WordPress core, config local, uploads hoặc cache.
