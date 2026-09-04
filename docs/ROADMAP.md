@@ -22,7 +22,7 @@ Trạng thái:
 - Local và production đã được đồng bộ cơ bản về WordPress, PHP, Kadence, LearnPress, permalink và site title.
 - Đã tạo dữ liệu LMS test thật trên local gồm course, section, lesson và hai subscriber.
 - Đã tạo child theme lms-kadence-child và active trên local; production cần active sau khi deploy.
-- Đã tạo và active custom plugin lms-site-core trên local; production cần active sau khi deploy.
+- Đã tạo và active custom plugin lms-site-core trên local; production cần active sau khi deploy. Plugin đã ẩn các mục quản trị nâng cao không cần thiết của LearnPress trong wp-admin, giữ lại Settings để cấu hình, ẩn các page phụ khỏi danh sách Pages và ẩn chúng khỏi frontend navigation.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 

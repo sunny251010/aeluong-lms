@@ -124,3 +124,35 @@ function lms_site_core_filter_navigation_html( string $items, array $args ): str
 }
 add_filter( 'wp_nav_menu_items', 'lms_site_core_filter_navigation_html', 20, 2 );
 add_filter( 'wp_page_menu', 'lms_site_core_filter_navigation_html', 20, 2 );
+/**
+ * Hide optional LearnPress admin entries without disabling their functionality.
+ */
+function lms_site_core_cleanup_admin_menu(): void {
+	remove_submenu_page( 'learn_press', 'edit.php?post_type=lp_order' );
+	$hidden_submenus = array(
+		'learn-press-statistics',
+		'learn-press-addons',
+		'learn-press-themes',
+		'learn-press-tools',
+		'learn-press-help-center',
+	);
+
+	foreach ( $hidden_submenus as $submenu ) {
+		remove_submenu_page( 'learn_press', $submenu );
+	}
+}
+add_action( 'admin_menu', 'lms_site_core_cleanup_admin_menu', 9999 );
+/**
+ * Hide optional LMS pages from the admin Pages list while keeping them accessible.
+ */
+function lms_site_core_hide_optional_pages_from_admin( WP_Query $query ): void {
+	if ( ! is_admin() || ! $query->is_main_query() || 'page' !== $query->get( 'post_type' ) ) {
+		return;
+	}
+
+	$hidden_page_ids = lms_site_core_exclude_optional_pages( array() );
+	$existing_ids   = $query->get( 'post__not_in' );
+	$existing_ids   = is_array( $existing_ids ) ? $existing_ids : array();
+	$query->set( 'post__not_in', array_values( array_unique( array_merge( $existing_ids, $hidden_page_ids ) ) ) );
+}
+add_action( 'pre_get_posts', 'lms_site_core_hide_optional_pages_from_admin' );

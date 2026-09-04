@@ -53,6 +53,7 @@ Plugin này chỉ chứa behavior riêng của website mà LearnPress hoặc the
 
 - Redirect homepage về course archive native của LearnPress.
 - Ẩn các mục Checkout/Instructor khỏi navigation trong giai đoạn học viên.
+- Ẩn Orders, Statistics, Add-ons, Themes, Tools và Help Center khỏi submenu LearnPress; giữ lại Settings để cấu hình hệ thống và currency; ẩn các page Checkout/Instructor khỏi danh sách Pages trong wp-admin.
 - Giữ nguyên các page và route phụ để có thể bật lại sau này.
 
 Không tự xây lại các phần LearnPress đã hỗ trợ như course, lesson, section, enrollment và progress.

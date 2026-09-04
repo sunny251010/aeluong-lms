@@ -68,14 +68,14 @@ Vì workflow hiện chỉ deploy `wp-content`, URL kiểm tra sẽ có dạng:
 
 `https://1263004.us28.myftpupload.com/wp-content/<ten-file>`
 
-## Kích hoạt child theme
+## Kích hoạt child theme và plugin
 
 Sau khi workflow deploy thành công:
 
-1. Vào WordPress Admin của local, mở Appearance -> Themes.
-2. Active LMS Kadence Child, rồi kiểm tra homepage và một course.
-3. Vào Plugins, active LMS Site Core nếu plugin chưa active.
-4. Thực hiện thao tác tương tự trên production sau khi workflow deploy thành công.
+1. Trên local, kiểm tra LMS Kadence Child và LMS Site Core đang active.
+2. Trên production, vào WordPress Admin -> Appearance -> Themes và active LMS Kadence Child nếu chưa active.
+3. Vào Plugins và active LMS Site Core.
+4. Kiểm tra homepage chuyển tới /courses/, frontend menu chỉ còn Courses; LearnPress submenu không còn Orders, Statistics, Add-ons, Themes, Tools, Help Center; Settings vẫn hiển thị để cấu hình currency và các thiết lập khác; danh sách Pages không còn các page Checkout/Instructor.
 5. Việc active theme/plugin là trạng thái database riêng của từng môi trường, không được đồng bộ bằng Git.
 
 ## Nguyên tắc an toàn
