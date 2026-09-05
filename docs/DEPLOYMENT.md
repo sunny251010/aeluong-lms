@@ -109,3 +109,19 @@ Sau khi workflow deploy thành công:
 GitHub Actions hiện chỉ deploy source trong wp-content, không đồng bộ database local. Vì vậy ba course và lesson mẫu được tạo local chưa tự xuất hiện trên hosting.
 
 Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. Với course miễn phí, tick checkbox Contact admin before enrollment trong hộp Course access; sau đó kiểm tra CTA mở modal Zalo.
+
+
+- Kiểm tra trang Courses mở mặc định ở Grid/Card.
+- Bấm nút List để xác nhận danh sách chuyển sang dạng dọc, sau đó bấm Grid để quay lại dạng card.
+
+
+- Với tài khoản chưa được cấp quyền, mở trang /lp-checkout/ hoặc checkout có course_id phải chuyển về trang course và hiện modal quyền học.
+- Xác nhận trang checkout vẫn tồn tại và admin không bị chặn.
+
+
+- Kiểm tra header: Courses và Contact ở giữa, Donation và account ở bên phải; bấm Donation để mở bank modal.
+
+
+- Vào LearnPress > Enroll student, chọn học viên và khóa học, bấm Enroll student.
+- Đăng nhập bằng tài khoản vừa cấp quyền và kiểm tra CTA chuyển thành Continue/ Tiếp tục học.
+- Thử submit lại cùng cặp học viên/khóa học để xác nhận hệ thống báo đã có quyền, không tạo enrollment trùng.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -25,6 +25,75 @@ function lms_site_core_redirect_home_to_courses(): void {
 	}
 }
 add_action( 'template_redirect', 'lms_site_core_redirect_home_to_courses', 20 );
+
+/**
+ * Detect the LearnPress checkout page without removing or disabling it.
+ */
+function lms_site_core_is_checkout_request(): bool {
+	if ( is_page( array( 'checkout', 'lp-checkout' ) ) ) {
+		return true;
+	}
+
+	if ( function_exists( 'learn_press_get_page_id' ) ) {
+		$checkout_page_id = absint( learn_press_get_page_id( 'checkout' ) );
+
+		if ( $checkout_page_id > 0 && is_page( $checkout_page_id ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Resolve a course ID when LearnPress includes it in the checkout URL.
+ */
+function lms_site_core_checkout_course_id(): int {
+	$keys = array( 'course_id', 'lp_item', 'item_id', 'course' );
+
+	foreach ( $keys as $key ) {
+		if ( isset( $_GET[ $key ] ) ) {
+			$course_id = absint( wp_unslash( $_GET[ $key ] ) );
+
+			if ( $course_id > 0 ) {
+				return $course_id;
+			}
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Temporarily keep restricted learners out of checkout while access is manual.
+ */
+function lms_site_core_redirect_restricted_checkout(): void {
+	if ( is_admin() || is_feed() || wp_doing_ajax() || ! is_user_logged_in() ) {
+		return;
+	}
+
+	if ( current_user_can( 'manage_options' ) || ! lms_site_core_is_checkout_request() ) {
+		return;
+	}
+
+	$course_id = lms_site_core_checkout_course_id();
+
+	if ( $course_id > 0 && lms_site_core_user_has_course_access( $course_id ) ) {
+		return;
+	}
+
+	$target_url = $course_id > 0 ? get_permalink( $course_id ) : get_post_type_archive_link( 'lp_course' );
+
+	if ( ! $target_url ) {
+		return;
+	}
+
+	$target_url = add_query_arg( 'lms_access', 'restricted', $target_url );
+
+	wp_safe_redirect( $target_url, 302 );
+	exit;
+}
+add_action( 'template_redirect', 'lms_site_core_redirect_restricted_checkout', 5 );
 
 /**
  * Hide optional LMS navigation items while keeping their pages available.
@@ -142,6 +211,179 @@ function lms_site_core_cleanup_admin_menu(): void {
 	}
 }
 add_action( 'admin_menu', 'lms_site_core_cleanup_admin_menu', 9999 );
+
+
+/**
+ * Add a small admin tool for manually enrolling a student into a course.
+ */
+function lms_site_core_add_enrollment_admin_page(): void {
+	add_submenu_page(
+		'learn_press',
+		'Enroll student',
+		'Enroll student',
+		'manage_options',
+		'lms-site-core-enroll',
+		'lms_site_core_render_enrollment_admin_page'
+	);
+}
+add_action( 'admin_menu', 'lms_site_core_add_enrollment_admin_page', 40 );
+
+/**
+ * Create a LearnPress enrollment using its official enrollment tool/model.
+ */
+function lms_site_core_enroll_user_in_course( int $user_id, int $course_id ) {
+	if ( class_exists( '\LearnPress\MCP\Domain\EnrollmentTools' ) ) {
+		$result = \LearnPress\MCP\Domain\EnrollmentTools::enroll_student(
+			array(
+				'user_id'   => $user_id,
+				'course_id' => $course_id,
+				'status'    => 'enrolled',
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return ! empty( $result['already_enrolled'] ) ? 'already' : true;
+	}
+
+	if ( ! class_exists( '\LearnPress\Models\UserItems\UserCourseModel' ) ) {
+		return new WP_Error( 'learnpress_unavailable', 'LearnPress enrollment model is unavailable.' );
+	}
+
+	try {
+		$existing = \LearnPress\Models\UserItems\UserCourseModel::find( $user_id, $course_id, false );
+		$active_statuses = array( 'enrolled', 'purchased', 'finished', 'completed' );
+
+		if ( $existing instanceof \LearnPress\Models\UserItems\UserCourseModel && in_array( $existing->get_status(), $active_statuses, true ) ) {
+			return 'already';
+		}
+
+		$enrollment             = new \LearnPress\Models\UserItems\UserCourseModel();
+		$enrollment->user_id    = $user_id;
+		$enrollment->item_id    = $course_id;
+		$enrollment->item_type  = LP_COURSE_CPT;
+		$enrollment->ref_type   = '';
+		$enrollment->status     = 'enrolled';
+		$enrollment->graduation = 'in-progress';
+		$enrollment->start_time = gmdate( 'Y-m-d H:i:s' );
+		$enrollment->save();
+
+		return true;
+	} catch ( Throwable $exception ) {
+		return new WP_Error( 'enrollment_failed', $exception->getMessage() );
+	}
+}
+
+function lms_site_core_process_enrollment_admin_form(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to enroll students.', 'lms-site-core' ) );
+	}
+
+	check_admin_referer( 'lms_site_core_enroll_student', 'lms_site_core_enroll_nonce' );
+
+	$user_id   = isset( $_POST['student_id'] ) ? absint( $_POST['student_id'] ) : 0;
+	$course_id = isset( $_POST['course_id'] ) ? absint( $_POST['course_id'] ) : 0;
+	$user      = $user_id > 0 ? get_userdata( $user_id ) : false;
+	$course    = $course_id > 0 ? get_post( $course_id ) : false;
+	$notice    = 'error';
+	$message   = 'Please select a valid student and course.';
+
+	if ( $user && $course && 'lp_course' === $course->post_type ) {
+		$result = lms_site_core_enroll_user_in_course( $user_id, $course_id );
+
+		if ( is_wp_error( $result ) ) {
+			$message = $result->get_error_message();
+		} elseif ( 'already' === $result ) {
+			$notice  = 'already';
+			$message = 'This student already has access to the selected course.';
+		} else {
+			$notice  = 'success';
+			$message = 'Student enrolled successfully.';
+		}
+	}
+
+	$redirect_url = add_query_arg(
+		array(
+			'page'               => 'lms-site-core-enroll',
+			'lms_enroll'         => $notice,
+			'lms_enroll_message' => $message,
+		),
+		admin_url( 'admin.php' )
+	);
+
+	wp_safe_redirect( $redirect_url );
+	exit;
+}
+add_action( 'admin_post_lms_site_core_enroll_student', 'lms_site_core_process_enrollment_admin_form' );
+
+function lms_site_core_render_enrollment_admin_page(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$users   = get_users(
+		array(
+			'orderby'      => 'display_name',
+			'order'        => 'ASC',
+			'role__not_in' => array( 'administrator' ),
+		)
+	);
+	$courses = get_posts(
+		array(
+			'post_type'      => 'lp_course',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
+	$status  = isset( $_GET['lms_enroll'] ) ? sanitize_key( wp_unslash( $_GET['lms_enroll'] ) ) : '';
+	$message = isset( $_GET['lms_enroll_message'] ) ? sanitize_text_field( wp_unslash( $_GET['lms_enroll_message'] ) ) : '';
+	?>
+	<div class="wrap">
+		<h1>Enroll student</h1>
+		<p>Select a WordPress user and a published LearnPress course to grant access without checkout or payment.</p>
+		<?php if ( 'success' === $status ) : ?>
+			<div class="notice notice-success is-dismissible"><p><?php echo esc_html( $message ); ?></p></div>
+		<?php elseif ( 'already' === $status ) : ?>
+			<div class="notice notice-info is-dismissible"><p><?php echo esc_html( $message ); ?></p></div>
+		<?php elseif ( 'error' === $status ) : ?>
+			<div class="notice notice-error is-dismissible"><p><?php echo esc_html( $message ); ?></p></div>
+		<?php endif; ?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="lms_site_core_enroll_student">
+			<?php wp_nonce_field( 'lms_site_core_enroll_student', 'lms_site_core_enroll_nonce' ); ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="lms-site-core-student">Student</label></th>
+					<td>
+						<select id="lms-site-core-student" name="student_id" required>
+							<option value="">Select a student</option>
+							<?php foreach ( $users as $student ) : ?>
+								<option value="<?php echo esc_attr( $student->ID ); ?>"><?php echo esc_html( $student->display_name . ' (' . $student->user_login . ')' ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="lms-site-core-course">Course</label></th>
+					<td>
+						<select id="lms-site-core-course" name="course_id" required>
+							<option value="">Select a course</option>
+							<?php foreach ( $courses as $course_item ) : ?>
+								<option value="<?php echo esc_attr( $course_item->ID ); ?>"><?php echo esc_html( $course_item->post_title ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</td>
+				</tr>
+			</table>
+			<?php submit_button( 'Enroll student' ); ?>
+		</form>
+	</div>
+	<?php
+}
 /**
  * Hide optional LMS pages from the admin Pages list while keeping them accessible.
  */
@@ -385,7 +627,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.3.0',
+		'0.4.0',
 		true
 	);
 
@@ -424,7 +666,7 @@ function lms_site_core_add_support_menu_item( string $items, $args ): string {
 		return $items;
 	}
 
-	$items .= '<li class="menu-item lms-site-core-support-item"><a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Support</a></li>';
+	$items .= '<li class="menu-item lms-site-core-support-item"><a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Donation</a></li>';
 
 	return $items;
 }

@@ -72,3 +72,9 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 - Không triển khai Phase 2 khi chưa hoàn thành và kiểm chứng Phase 1.
 - Không deploy production hoặc dùng destructive sync/delete nếu chưa được yêu cầu rõ.
 - Không thêm dependency hoặc framework lớn nếu project chưa thật sự cần.
+
+- [x] Archive khóa học mặc định Grid/Card và vẫn cho phép người dùng chuyển sang List.
+
+- [x] Tạm chuyển user chưa có quyền khỏi LearnPress checkout về luồng course/access modal; giữ checkout cho payment sau này.
+
+- [x] Admin cấp quyền trực tiếp cho học viên theo từng course, không cần checkout/payment.

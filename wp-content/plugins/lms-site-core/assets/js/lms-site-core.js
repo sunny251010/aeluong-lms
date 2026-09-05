@@ -69,6 +69,23 @@ function lmsSiteCoreInit() {
 		openModal(supportModal);
 	}
 
+	function showRestrictedAccessFromRedirect() {
+		var params = new URLSearchParams(window.location.search);
+
+		if ('restricted' !== params.get('lms_access') || !state.isLoggedIn) {
+			return;
+		}
+
+		showAccess(false);
+		params.delete('lms_access');
+
+		var cleanQuery = params.toString();
+		var cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
+		window.history.replaceState({}, document.title, cleanUrl);
+	}
+
+	showRestrictedAccessFromRedirect();
+
 	function closeAllModals() {
 		closeModal(loginModal);
 		closeModal(accessModal);
@@ -194,6 +211,26 @@ function lmsSiteCoreInit() {
 				});
 		});
 	}
+
+	var defaultGridAttempts = 0;
+
+	function setDefaultCourseGrid() {
+		var gridToggle = document.getElementById('lp-switch-layout-btn-grid');
+
+		if (gridToggle) {
+			if (!gridToggle.checked) {
+				gridToggle.click();
+			}
+			return;
+		}
+
+		if (defaultGridAttempts < 20) {
+			defaultGridAttempts += 1;
+			window.setTimeout(setDefaultCourseGrid, 100);
+		}
+	}
+
+	window.setTimeout(setDefaultCourseGrid, 0);
 
 	if (
 		state.isLoggedIn &&

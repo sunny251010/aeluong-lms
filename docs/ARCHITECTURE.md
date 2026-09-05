@@ -118,3 +118,23 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 - Khóa có meta _lms_contact_course = 1 sẽ mở modal liên hệ Zalo để admin cấp quyền, không đi qua checkout hoặc tự enroll.
 
 - Plugin cung cấp checkbox Contact admin before enrollment cho các course cần admin cấp quyền trước khi học.
+
+
+### Hiển thị danh sách khóa học
+
+Trang archive khóa học mặc định dùng chế độ Grid/Card để người học dễ quét nội dung. Các nút chuyển layout của LearnPress vẫn được giữ lại để người dùng đổi sang List khi cần; CSS của child theme chỉ áp dụng bố cục tương ứng với data-layout hiện tại.
+
+
+### Luồng checkout tạm thời
+
+Trang checkout LearnPress vẫn được giữ để phục vụ payment về sau. Trong giai đoạn cấp quyền thủ công, user thường chưa có quyền học sẽ được chuyển về trang course kèm modal thông báo và nút liên hệ Zalo; admin vẫn có thể truy cập checkout.
+
+
+### Header navigation
+
+Courses và Contact được căn giữa vùng header. Donation và account action được neo về bên phải trên desktop; mobile giữ bố cục responsive. Donation mở modal thông tin ủng hộ ngân hàng.
+
+
+### Cấp quyền học thủ công
+
+Admin có thể mở LearnPress > Enroll student, chọn WordPress user và published course để tạo enrollment trực tiếp bằng API/model của LearnPress. Luồng này không đi qua checkout/payment và không tạo custom table.

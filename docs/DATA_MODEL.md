@@ -70,3 +70,8 @@ Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/funct
 - Course ID 33: Giao tiếp tiếng Anh nâng cao, có section và lesson mẫu.
 - Course ID 34: Giao tiếp tiếng Anh miễn phí cho sinh viên, có section và lesson mẫu; meta _lms_contact_course = 1 để yêu cầu liên hệ admin qua Zalo trước khi cấp quyền.
 - Modal Support hiện dùng ảnh placeholder và thông tin ngân hàng demo; chưa phải thông tin nhận tiền thật.
+
+
+## Cấp quyền học thủ công
+
+Plugin không tạo bảng dữ liệu riêng. Khi admin cấp quyền trong LearnPress > Enroll student, LearnPress tạo user-course enrollment với status enrolled; nếu enrollment đang active thì không tạo bản ghi trùng.

@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.5.1
+Version: 0.6.0
 Text Domain: lms-kadence-child
 */
 
@@ -18,7 +18,9 @@ Text Domain: lms-kadence-child
 }
 
 .lp-archive-courses .lp-courses-bar .switch-layout {
-  display: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .lp-archive-courses .learn-press-courses-header h1 {
@@ -456,52 +458,167 @@ body.lms-site-core-modal-open {
 
 
 /* Force the project archive into a responsive card grid. */
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   margin: 0;
 }
 
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] > li.course {
   display: flex !important;
   width: auto !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course > .course-item {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] > li.course > .course-item {
   display: flex !important;
   width: 100%;
   flex-direction: column !important;
 }
 
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-content {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] > li.course .course-content {
   display: flex !important;
   flex: 1;
   flex-direction: column !important;
 }
 
 @media (max-width: 992px) {
-  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 767px) {
-  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
 
 
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-thumbnail {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] > li.course .course-thumbnail {
   width: 100% !important;
   min-width: 100%;
   flex: none;
 }
 
-.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-thumbnail .course-img {
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="grid"] > li.course .course-thumbnail .course-img {
   width: 100%;
+}
+
+
+/* Keep LearnPress list mode available when the user switches layout. */
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px;
+  margin: 0;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course {
+  display: flex !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course > .course-item {
+  display: flex !important;
+  width: 100%;
+  flex-direction: row !important;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course .course-thumbnail {
+  width: 30% !important;
+  min-width: 30%;
+  flex: 0 0 30%;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course .course-content {
+  display: flex !important;
+  flex: 1;
+  flex-direction: column !important;
+}
+
+@media (max-width: 767px) {
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course > .course-item {
+    flex-direction: column !important;
+  }
+
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css[data-layout="list"] > li.course .course-thumbnail {
+    width: 100% !important;
+    min-width: 100%;
+    flex-basis: auto;
+  }
+}
+
+
+/* Keep primary navigation centered and move donation/account actions to the right. */
+@media (min-width: 768px) {
+  .site-main-header-inner-wrap {
+    position: relative;
+  }
+
+  .site-header-main-section-center {
+    position: static;
+  }
+
+  #primary-menu {
+    position: static;
+    width: 100%;
+    justify-content: center;
+  }
+
+  #primary-menu .lms-site-core-support-item,
+  #primary-menu .lms-site-core-account-item {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    margin-left: 0;
+    transform: translateY(-50%);
+  }
+
+  #primary-menu .lms-site-core-support-item {
+    right: 202px;
+  }
+
+  #primary-menu .lms-site-core-account-item {
+    right: 0;
+    max-width: 190px;
+  }
+
+  #primary-menu .lms-site-core-account-link {
+    max-width: 190px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  #primary-menu .lms-site-core-account-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  #primary-menu {
+    position: relative;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  #primary-menu .lms-site-core-support-item,
+  #primary-menu .lms-site-core-account-item {
+    position: static;
+    max-width: none;
+    transform: none;
+  }
+
+  #primary-menu .lms-site-core-account-link,
+  #primary-menu .lms-site-core-account-name {
+    max-width: none;
+  }
 }
