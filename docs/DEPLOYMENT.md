@@ -75,7 +75,7 @@ Sau khi workflow deploy thành công:
 1. Trên local, kiểm tra LMS Kadence Child và LMS Site Core đang active.
 2. Trên production, vào WordPress Admin -> Appearance -> Themes và active LMS Kadence Child nếu chưa active.
 3. Vào Plugins và active LMS Site Core.
-4. Kiểm tra homepage chuyển tới /courses/, frontend menu chỉ còn Courses; LearnPress submenu không còn Orders, Statistics, Add-ons, Themes, Tools, Help Center; Settings vẫn hiển thị để cấu hình currency và các thiết lập khác; danh sách Pages không còn các page Checkout/Instructor.
+4. Kiểm tra homepage chuyển tới /courses/, course archive hiển thị card grid responsive; frontend menu chỉ còn Courses; LearnPress submenu không còn Orders, Statistics, Add-ons, Themes, Tools, Help Center; Settings vẫn hiển thị để cấu hình currency và các thiết lập khác; danh sách Pages không còn các page Checkout/Instructor.
 5. Việc active theme/plugin là trạng thái database riêng của từng môi trường, không được đồng bộ bằng Git.
 
 ## Nguyên tắc an toàn
