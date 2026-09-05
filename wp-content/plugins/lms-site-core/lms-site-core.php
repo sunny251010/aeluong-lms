@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -101,7 +101,7 @@ add_filter( 'wp_page_menu_args', 'lms_site_core_fallback_page_menu_args' );
 /**
  * Remove optional page items from themes that render menu HTML directly.
  */
-function lms_site_core_filter_navigation_html( string $items, array $args ): string {
+function lms_site_core_filter_navigation_html( string $items, $args ): string {
 	$hidden_paths = array(
 		'/checkout',
 		'/lp-checkout',
@@ -156,3 +156,335 @@ function lms_site_core_hide_optional_pages_from_admin( WP_Query $query ): void {
 	$query->set( 'post__not_in', array_values( array_unique( array_merge( $existing_ids, $hidden_page_ids ) ) ) );
 }
 add_action( 'pre_get_posts', 'lms_site_core_hide_optional_pages_from_admin' );
+
+
+/**
+ * Use Vietnamese translations on public pages while keeping wp-admin in English.
+ */
+function lms_site_core_frontend_locale( string $locale ): string {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return $locale;
+	}
+
+	return 'vi';
+}
+add_filter( 'locale', 'lms_site_core_frontend_locale', 20 );
+
+/**
+ * Fill the small set of LearnPress labels used by the current frontend flow.
+ */
+function lms_site_core_translate_frontend( string $translated, string $text, string $domain ): string {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return $translated;
+	}
+
+	if ( ! in_array( $domain, array( 'learnpress', 'default', 'kadence' ), true ) ) {
+		return $translated;
+	}
+
+	$translations = array(
+		'Buy Now'            => 'Xem chi tiết',
+		'View More'          => 'Xem chi tiết',
+		'View Detail'        => 'Xem chi tiết',
+		'Start Learning'     => 'Tiếp tục học',
+		'Continue Learning'  => 'Tiếp tục học',
+		'Continue'           => 'Tiếp tục học',
+		'Enroll Now'         => 'Liên hệ để học',
+		'Search courses...'  => 'Tìm khóa học...',
+		'Newly published'    => 'Mới đăng',
+		'Title a-z'          => 'Tên A-Z',
+		'Title z-a'          => 'Tên Z-A',
+		'Price high to low'  => 'Giá cao đến thấp',
+		'Price low to high'  => 'Giá thấp đến cao',
+		'Popular'            => 'Phổ biến',
+		'All levels'         => 'Mọi cấp độ',
+		'by'                 => 'bởi',
+		'Students'           => 'Học viên',
+		'Quizzes'            => 'Bài kiểm tra',
+		'Lesson'             => 'Bài học',
+		'Lessons'            => 'Bài học',
+		'Contact'            => 'Liên hệ',
+		'Home'               => 'Trang chủ',
+		'Courses'            => 'Khóa học',
+	);
+
+	return $translations[ $text ] ?? $translated;
+}
+add_filter( 'gettext', 'lms_site_core_translate_frontend', 20, 3 );
+
+/**
+ * Keep the Zalo contact URL in one project-owned place.
+ */
+function lms_site_core_zalo_url(): string {
+	return 'https://zalo.me/0984715632';
+}
+
+/**
+ * Resolve a LearnPress course ID from its model.
+ */
+function lms_site_core_course_id( $course ): int {
+	if ( is_object( $course ) && method_exists( $course, 'get_id' ) ) {
+		return absint( $course->get_id() );
+	}
+
+	return 0;
+}
+
+/**
+ * Check LearnPress access without duplicating enrollment data.
+ */
+function lms_site_core_user_has_course_access( int $course_id ): bool {
+	if ( $course_id <= 0 || ! is_user_logged_in() ) {
+		return false;
+	}
+
+	if ( current_user_can( 'manage_options' ) ) {
+		return true;
+	}
+
+	if ( ! function_exists( 'learn_press_get_current_user' ) ) {
+		return false;
+	}
+
+	$user = learn_press_get_current_user();
+
+	return $user && method_exists( $user, 'has_enrolled_or_finished' )
+		? (bool) $user->has_enrolled_or_finished( $course_id )
+		: false;
+}
+
+/**
+ * Render archive actions according to login and enrollment state.
+ */
+function lms_site_core_course_archive_cta( array $sections, $course, $settings ): array {
+	$course_id = lms_site_core_course_id( $course );
+
+	if ( $course_id <= 0 || ! is_object( $course ) || ! method_exists( $course, 'get_permalink' ) ) {
+		return $sections;
+	}
+
+	$has_access = lms_site_core_user_has_course_access( $course_id );
+	$label      = 'Xem chi tiết';
+	$attributes = '';
+
+	if ( is_user_logged_in() && $has_access ) {
+		$label = 'Tiếp tục học';
+	} elseif ( is_user_logged_in() ) {
+		$label      = 'Liên hệ để học';
+		$attributes = sprintf(
+			' data-lms-course-request="1" data-course-id="%d"',
+			$course_id
+		);
+	}
+
+	$sections['btn_read_more'] = sprintf(
+		'<div class="course-readmore"><a href="%s" class="lms-site-core-course-cta"%s>%s</a></div>',
+		esc_url( $course->get_permalink() ),
+		$attributes,
+		esc_html( $label )
+	);
+
+	return $sections;
+}
+add_filter( 'learn-press/layout/list-courses/item/section/bottom/end', 'lms_site_core_course_archive_cta', 30, 3 );
+
+/**
+ * Disable LearnPress self-service enrollment/purchase on course detail pages.
+ */
+function lms_site_core_hide_self_service_button( bool $can_show, $user, $course ): bool {
+	if ( ! is_singular( 'lp_course' ) ) {
+		return $can_show;
+	}
+
+	$course_id = lms_site_core_course_id( $course );
+
+	if ( lms_site_core_user_has_course_access( $course_id ) ) {
+		return $can_show;
+	}
+
+	return false;
+}
+add_filter( 'learnpress/course/template/button-purchase/can-show', 'lms_site_core_hide_self_service_button', 20, 3 );
+add_filter( 'learnpress/course/template/button-enroll/can-show', 'lms_site_core_hide_self_service_button', 20, 3 );
+
+/**
+ * Provide frontend state and load the small project-owned interaction script.
+ */
+function lms_site_core_enqueue_frontend_assets(): void {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return;
+	}
+
+	$current_course_id = is_singular( 'lp_course' ) ? get_queried_object_id() : 0;
+
+	wp_enqueue_script(
+		'lms-site-core-frontend',
+		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
+		array(),
+		'0.2.0',
+		true
+	);
+
+	wp_localize_script(
+		'lms-site-core-frontend',
+		'lmsSiteCore',
+		array(
+			'ajaxUrl'             => admin_url( 'admin-ajax.php' ),
+			'nonce'               => wp_create_nonce( 'lms_site_core_login' ),
+			'isLoggedIn'          => is_user_logged_in(),
+			'currentCourseId'     => $current_course_id,
+			'currentCourseAccess' => $current_course_id > 0
+				? lms_site_core_user_has_course_access( $current_course_id )
+				: false,
+			'zaloUrl'             => lms_site_core_zalo_url(),
+			'loginError'          => 'Thông tin đăng nhập chưa đúng.',
+			'networkError'        => 'Không thể kết nối. Vui lòng thử lại.',
+		)
+	);
+}
+add_action( 'wp_enqueue_scripts', 'lms_site_core_enqueue_frontend_assets', 20 );
+
+/**
+ * Add the account action to the primary navigation.
+ */
+function lms_site_core_add_account_menu_item( string $items, $args ): string {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return $items;
+	}
+
+	$theme_location = is_object( $args ) && isset( $args->theme_location )
+		? (string) $args->theme_location
+		: '';
+
+	if ( ! in_array( $theme_location, array( 'primary', 'primary_navigation' ), true ) ) {
+		return $items;
+	}
+
+	if ( is_user_logged_in() ) {
+		$user       = wp_get_current_user();
+		$profile_url = function_exists( 'learn_press_user_profile_url' )
+			? learn_press_user_profile_url()
+			: get_edit_profile_url( $user->ID );
+		$avatar     = get_avatar( $user->ID, 32, '', $user->display_name, array( 'class' => array( 'lms-site-core-avatar' ) ) );
+
+		$items .= sprintf(
+			'<li class="menu-item lms-site-core-account-item"><button type="button" class="lms-site-core-account-link" aria-expanded="false" aria-haspopup="true">%s<span class="lms-site-core-account-name">%s</span></button><span class="lms-site-core-account-dropdown"><a href="%s">Tài khoản</a><a href="%s">Đăng xuất</a></span></li>',
+			$avatar,
+			esc_html( $user->display_name ?: $user->user_login ),
+			esc_url( $profile_url ),
+			esc_url( wp_logout_url( home_url( '/' ) ) )
+		);
+	} else {
+		$items .= '<li class="menu-item lms-site-core-account-item"><a href="#lms-login-modal" class="lms-site-core-account-link" data-lms-login-trigger="1">Đăng nhập</a></li>';
+	}
+
+	return $items;
+}
+add_filter( 'wp_nav_menu_items', 'lms_site_core_add_account_menu_item', 30, 2 );
+
+/**
+ * Render the login and access dialogs once per frontend page.
+ */
+function lms_site_core_render_frontend_dialogs(): void {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return;
+	}
+	?>
+	<div id="lms-login-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-login-title" hidden>
+		<div class="lms-site-core-modal-panel">
+			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
+			<h2 id="lms-login-title">Đăng nhập để tiếp tục</h2>
+			<p class="lms-site-core-modal-intro">Đăng nhập bằng tài khoản do quản trị viên cấp.</p>
+			<form id="lms-site-core-login-form">
+				<label for="lms-login-username">Tên đăng nhập hoặc email</label>
+				<input id="lms-login-username" name="login" type="text" autocomplete="username" required>
+				<label for="lms-login-password">Mật khẩu</label>
+				<input id="lms-login-password" name="password" type="password" autocomplete="current-password" required>
+				<label class="lms-site-core-remember"><input name="remember" type="checkbox" value="1"> Ghi nhớ đăng nhập</label>
+				<p class="lms-site-core-modal-message" data-lms-login-message role="alert" hidden></p>
+				<button type="submit" class="lms-site-core-modal-submit">Đăng nhập</button>
+			</form>
+			<p class="lms-site-core-modal-note">Google Login sẽ được bổ sung sau.</p>
+		</div>
+	</div>
+	<div id="lms-access-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-access-title" hidden>
+		<div class="lms-site-core-modal-panel">
+			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
+			<h2 id="lms-access-title">Chưa được cấp quyền học</h2>
+			<p class="lms-site-core-modal-intro">Tài khoản của bạn chưa được cấp quyền cho khóa học này.</p>
+			<a class="lms-site-core-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Liên hệ qua Zalo</a>
+		</div>
+	</div>
+	<?php
+}
+add_action( 'wp_footer', 'lms_site_core_render_frontend_dialogs', 20 );
+
+/**
+ * Handle the project login form with WordPress authentication.
+ */
+function lms_site_core_ajax_login(): void {
+	check_ajax_referer( 'lms_site_core_login', 'nonce' );
+
+	$login    = sanitize_text_field( wp_unslash( $_POST['login'] ?? '' ) );
+	$password = (string) wp_unslash( $_POST['password'] ?? '' );
+	$remember = ! empty( $_POST['remember'] );
+
+	if ( '' === $login || '' === $password ) {
+		wp_send_json_error( array( 'message' => 'Vui lòng nhập đủ thông tin đăng nhập.' ), 400 );
+	}
+
+	if ( is_email( $login ) ) {
+		$user_by_email = get_user_by( 'email', $login );
+		$login         = $user_by_email ? $user_by_email->user_login : $login;
+	}
+
+	$user = wp_signon(
+		array(
+			'user_login'    => $login,
+			'user_password' => $password,
+			'remember'      => $remember,
+		),
+		is_ssl()
+	);
+
+	if ( is_wp_error( $user ) ) {
+		wp_send_json_error( array( 'message' => 'Thông tin đăng nhập chưa đúng.' ), 401 );
+	}
+
+	wp_set_current_user( $user->ID );
+	wp_send_json_success( array( 'userId' => $user->ID ) );
+}
+add_action( 'wp_ajax_nopriv_lms_site_core_login', 'lms_site_core_ajax_login' );
+add_action( 'wp_ajax_lms_site_core_login', 'lms_site_core_ajax_login' );
+
+
+/**
+ * Replace native purchase/enroll actions with the project access flow.
+ */
+function lms_site_core_course_detail_buttons( array $buttons, $course, $user ): array {
+	$course_id = lms_site_core_course_id( $course );
+
+	if ( lms_site_core_user_has_course_access( $course_id ) ) {
+		return $buttons;
+	}
+
+	$label = is_user_logged_in() ? 'Liên hệ để học' : 'Đăng nhập để học';
+	$buttons['btn_buy'] = sprintf(
+		'<button type="button" class="lp-button button lms-site-core-course-access-trigger" data-lms-course-request="1" data-course-id="%d">%s</button>',
+		esc_attr( $course_id ),
+		esc_html( $label )
+	);
+
+	if ( array_key_exists( 'btn_enroll', $buttons ) ) {
+		$buttons['btn_enroll'] = '';
+	}
+
+	if ( array_key_exists( 'btn_contact', $buttons ) ) {
+		$buttons['btn_contact'] = '';
+	}
+
+	return $buttons;
+}
+add_filter( 'learn-press/single-course/modern/section-right/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );
+add_filter( 'learn-press/single-course/model/section-right/info-meta/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );
+add_filter( 'learn-press/single-course/offline/section-right/info-meta/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );

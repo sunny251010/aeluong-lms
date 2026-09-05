@@ -40,7 +40,8 @@ Luồng quyền học dự kiến:
 
 - User chưa đăng nhập thì được xem thông tin course nhưng khi bấm "Học ngay" sẽ được yêu cầu login.
 - User đã đăng nhập và có quyền course thì được vào học.
-- User đã đăng nhập nhưng chưa có quyền thì thấy thông báo chưa được cấp quyền.
+- User đã đăng nhập nhưng chưa có quyền thì thấy thông báo chưa được cấp quyền và link Zalo https://zalo.me/0984715632.
+- Guest login dùng WordPress authentication; không tạo custom user table.
 
 Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/functions/capabilities của LearnPress.
 

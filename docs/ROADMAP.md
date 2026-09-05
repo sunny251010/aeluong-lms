@@ -24,6 +24,7 @@ Trạng thái:
 - Đã tạo child theme lms-kadence-child và active trên local; production cần active sau khi deploy.
 - Đã tạo và active custom plugin lms-site-core trên local; production cần active sau khi deploy. Plugin đã ẩn các mục quản trị nâng cao không cần thiết của LearnPress trong wp-admin, giữ lại Settings để cấu hình, ẩn các page phụ khỏi danh sách Pages và ẩn chúng khỏi frontend navigation.
 - Đã bổ sung giao diện course archive dạng card grid trong child theme: 3 cột desktop, 2 cột tablet và 1 cột mobile.
+- Đã bổ sung frontend Vietnamese, login modal bằng WordPress account, avatar account menu, CTA theo enrollment và Zalo access modal; Google OAuth để phase sau.
 
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 
@@ -36,8 +37,8 @@ Thứ tự đề xuất:
 5. Deploy và active plugin lms-site-core; chỉ bổ sung business logic khi có yêu cầu thật sự cần.
 6. Kiểm tra homepage chuyển tới course archive và query course từ LearnPress.
 7. Hiển thị course archive dạng card grid responsive, có thumbnail, mô tả ngắn, giá và nút “Học ngay”.
-8. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access.
-9. Thêm Zalo contact và footer cơ bản.
+8. Xử lý nút "Học ngay" theo trạng thái logged out/logged in/access và login modal.
+9. Thêm Zalo contact/access modal và footer cơ bản.
 10. Deploy production từng thay đổi nhỏ bằng GitHub Actions và kiểm tra smoke test.
 11. Cập nhật README/docs sau mỗi thay đổi.
 

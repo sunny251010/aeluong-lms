@@ -9,6 +9,7 @@ Mục tiêu chính:
 - Homepage tối giản, hiển thị danh sách khóa học.
 - Người dùng xem thông tin khóa học khi chưa đăng nhập.
 - Nút "Học ngay" xử lý theo trạng thái đăng nhập và quyền truy cập khóa học.
+- Course archive hiển thị card grid responsive với CTA theo trạng thái tài khoản.
 - Admin cấp quyền học cho từng user theo từng course.
 - LMS dùng LearnPress làm nền tảng chính.
 - Login hỗ trợ WordPress username/password và Google OAuth thông qua plugin có sẵn.
@@ -72,11 +73,12 @@ Không cần hero lớn, animation phức tạp, marketing section dài, testimo
 
 ## Login và access flow
 
-Khi user click "Học ngay":
+Khi user click CTA course:
 
-- Chưa đăng nhập: yêu cầu login.
-- Đã đăng nhập và có quyền course: chuyển tới course/lesson phù hợp.
-- Đã đăng nhập nhưng chưa có quyền: hiển thị thông báo đơn giản rằng tài khoản chưa được cấp quyền khóa học.
+- Chưa đăng nhập: mở login modal bằng username/password.
+- Đã đăng nhập và có quyền course: hiển thị Continue và chuyển tới lesson phù hợp.
+- Đã đăng nhập nhưng chưa có quyền: mở modal thông báo và nút liên hệ Zalo.
+- Header hiển thị Login khi guest và avatar khi đã đăng nhập.
 
 Google OAuth không tự implement từ đầu. Nếu cần Google login, cấu hình qua plugin OAuth phù hợp trong WordPress Admin.
 
