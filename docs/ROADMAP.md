@@ -26,6 +26,10 @@ Trạng thái:
 - Đã bổ sung giao diện course archive dạng card grid trong child theme: 3 cột desktop, 2 cột tablet và 1 cột mobile.
 - Đã bổ sung frontend Vietnamese, login modal bằng WordPress account, avatar account menu, CTA theo enrollment và Zalo access modal; Google OAuth để phase sau.
 
+
+- Đã bổ sung action Support cạnh account menu, modal ngân hàng placeholder và modal access riêng cho khóa miễn phí cần liên hệ admin.
+- Đã tạo dữ liệu local gồm ba khóa giao tiếp tiếng Anh, section/lesson mẫu và giữ LearnPress làm source of truth.
+
 ## Phase 1 - Nền tảng WordPress/LearnPress tối giản
 
 Thứ tự đề xuất:

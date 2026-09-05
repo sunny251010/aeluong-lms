@@ -108,3 +108,13 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 - Custom plugin lms-site-core đã được tạo và active ở local; cần deploy và active riêng trên production.
 - Git ignore third-party themes/plugins; chỉ whitelist child theme và custom plugin do project sở hữu.
 - Git đang được cấu hình để track tài liệu và custom code, không track WordPress core, config local, uploads hoặc cache.
+
+
+## Giao diện header và hỗ trợ dự án
+
+- Header giữ logo/site title trong cùng container với navigation để các action nằm cân theo trục nội dung.
+- Action Support mở modal thông tin chuyển khoản; ảnh ngân hàng hiện là placeholder nội bộ và phải được thay trước khi nhận ủng hộ thật.
+- Login modal dùng chung cho action header và CTA khóa học; Google OAuth vẫn để phase sau.
+- Khóa có meta _lms_contact_course = 1 sẽ mở modal liên hệ Zalo để admin cấp quyền, không đi qua checkout hoặc tự enroll.
+
+- Plugin cung cấp checkbox Contact admin before enrollment cho các course cần admin cấp quyền trước khi học.

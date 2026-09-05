@@ -1,10 +1,13 @@
 
-(function () {
+function lmsSiteCoreInit() {
 	'use strict';
 
 	var state = window.lmsSiteCore || {};
 	var loginModal = document.getElementById('lms-login-modal');
 	var accessModal = document.getElementById('lms-access-modal');
+	var supportModal = document.getElementById('lms-support-modal');
+	var accessTitle = document.getElementById('lms-access-title');
+	var accessMessage = document.querySelector('[data-lms-access-message]');
 	var loginForm = document.getElementById('lms-site-core-login-form');
 	var loginMessage = document.querySelector('[data-lms-login-message]');
 	var accountToggle = document.querySelector('.lms-site-core-account-link[aria-haspopup="true"]');
@@ -31,14 +34,15 @@
 
 		modal.hidden = true;
 
-		if (loginModal && loginModal.hidden && accessModal && accessModal.hidden) {
+		if (loginModal && loginModal.hidden && accessModal && accessModal.hidden && supportModal && supportModal.hidden) {
 			document.body.classList.remove('lms-site-core-modal-open');
 		}
 	}
 
 	function showLogin(courseId) {
-		if (courseId) {
-			window.sessionStorage.setItem('lmsPendingCourseId', String(courseId));
+		var normalizedCourseId = parseInt(courseId, 10);
+		if (normalizedCourseId > 0) {
+			window.sessionStorage.setItem('lmsPendingCourseId', String(normalizedCourseId));
 		}
 
 		if (loginMessage) {
@@ -49,19 +53,33 @@
 		openModal(loginModal);
 	}
 
-	function showAccess() {
+	function showAccess(contactOnly) {
+		if (accessTitle) {
+			accessTitle.textContent = contactOnly ? 'Đăng ký nhận khóa học' : 'Chưa được cấp quyền học';
+		}
+		if (accessMessage) {
+			accessMessage.textContent = contactOnly
+				? 'Đây là khóa học hỗ trợ cộng đồng. Hãy liên hệ quản trị viên để nhận quyền học.'
+				: 'Tài khoản của bạn chưa được cấp quyền cho khóa học này.';
+		}
 		openModal(accessModal);
+	}
+
+	function showSupport() {
+		openModal(supportModal);
 	}
 
 	function closeAllModals() {
 		closeModal(loginModal);
 		closeModal(accessModal);
+		closeModal(supportModal);
 	}
 
 	document.addEventListener('click', function (event) {
 		var loginTrigger = event.target.closest('[data-lms-login-trigger]');
 		var courseRequest = event.target.closest('[data-lms-course-request]');
 		var closeTrigger = event.target.closest('[data-lms-modal-close]');
+		var supportTrigger = event.target.closest('[data-lms-support-trigger]');
 		var accountButton = event.target.closest('.lms-site-core-account-link[aria-haspopup="true"]');
 
 		if (loginTrigger) {
@@ -70,12 +88,19 @@
 			return;
 		}
 
+		if (supportTrigger) {
+			event.preventDefault();
+			showSupport();
+			return;
+		}
+
 		if (courseRequest) {
 			event.preventDefault();
 			var courseId = courseRequest.getAttribute('data-course-id') || state.currentCourseId || 0;
+			var contactOnly = courseRequest.getAttribute('data-lms-contact-only') === '1';
 
-			if (state.isLoggedIn) {
-				showAccess();
+			if (contactOnly || state.isLoggedIn) {
+				showAccess(contactOnly);
 			} else {
 				showLogin(courseId);
 			}
@@ -94,6 +119,11 @@
 
 		if (event.target === accessModal) {
 			closeModal(accessModal);
+			return;
+		}
+
+		if (event.target === supportModal) {
+			closeModal(supportModal);
 			return;
 		}
 
@@ -172,6 +202,12 @@
 		window.sessionStorage.getItem('lmsPendingCourseId') === String(state.currentCourseId)
 	) {
 		window.sessionStorage.removeItem('lmsPendingCourseId');
-		showAccess();
+		showAccess(false);
 	}
-})();
+}
+
+if ('loading' === document.readyState) {
+	document.addEventListener('DOMContentLoaded', lmsSiteCoreInit);
+} else {
+	lmsSiteCoreInit();
+}

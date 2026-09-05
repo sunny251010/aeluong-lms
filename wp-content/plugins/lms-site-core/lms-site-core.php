@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -184,6 +184,8 @@ function lms_site_core_translate_frontend( string $translated, string $text, str
 
 	$translations = array(
 		'Buy Now'            => 'Xem chi tiết',
+		'Free'              => 'Miễn phí',
+		'Free Course'       => 'Khóa học miễn phí',
 		'View More'          => 'Xem chi tiết',
 		'View Detail'        => 'Xem chi tiết',
 		'Start Learning'     => 'Tiếp tục học',
@@ -231,6 +233,61 @@ function lms_site_core_course_id( $course ): int {
 }
 
 /**
+ * Identify courses that require admin contact before access is granted.
+ */
+function lms_site_core_is_contact_course( int $course_id ): bool {
+	return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true );
+}
+
+/**
+ * Add a small project-owned access flag to the LearnPress course editor.
+ */
+function lms_site_core_add_course_access_meta_box(): void {
+	add_meta_box(
+		'lms-site-core-course-access',
+		'Course access',
+		'lms_site_core_render_course_access_meta_box',
+		'lp_course',
+		'side',
+		'high'
+	);
+}
+add_action( 'add_meta_boxes_lp_course', 'lms_site_core_add_course_access_meta_box' );
+
+function lms_site_core_render_course_access_meta_box( WP_Post $post ): void {
+	wp_nonce_field( 'lms_site_core_course_access', 'lms_site_core_course_access_nonce' );
+	$contact_required = lms_site_core_is_contact_course( $post->ID );
+	?>
+	<label>
+		<input type="checkbox" name="_lms_contact_course" value="1" <?php checked( $contact_required ); ?>>
+		Contact admin before enrollment
+	</label>
+	<p class="description">Use this for community or scholarship courses that require admin approval before access.</p>
+	<?php
+}
+
+function lms_site_core_save_course_access_meta( int $post_id, WP_Post $post, bool $is_update ): void {
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! isset( $_POST['lms_site_core_course_access_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['lms_site_core_course_access_nonce'] ) ), 'lms_site_core_course_access' ) ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( ! empty( $_POST['_lms_contact_course'] ) ) {
+		update_post_meta( $post_id, '_lms_contact_course', '1' );
+	} else {
+		delete_post_meta( $post_id, '_lms_contact_course' );
+	}
+}
+add_action( 'save_post_lp_course', 'lms_site_core_save_course_access_meta', 5, 3 );
+
+/**
  * Check LearnPress access without duplicating enrollment data.
  */
 function lms_site_core_user_has_course_access( int $course_id ): bool {
@@ -263,12 +320,19 @@ function lms_site_core_course_archive_cta( array $sections, $course, $settings )
 		return $sections;
 	}
 
-	$has_access = lms_site_core_user_has_course_access( $course_id );
-	$label      = 'Xem chi tiết';
-	$attributes = '';
+	$has_access      = lms_site_core_user_has_course_access( $course_id );
+	$contact_required = lms_site_core_is_contact_course( $course_id );
+	$label            = 'Xem chi tiết';
+	$attributes       = '';
 
 	if ( is_user_logged_in() && $has_access ) {
 		$label = 'Tiếp tục học';
+	} elseif ( $contact_required ) {
+		$label      = 'Liên hệ để nhận khóa học';
+		$attributes = sprintf(
+			' data-lms-course-request="1" data-course-id="%d" data-lms-contact-only="1"',
+			$course_id
+		);
 	} elseif ( is_user_logged_in() ) {
 		$label      = 'Liên hệ để học';
 		$attributes = sprintf(
@@ -321,7 +385,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.2.0',
+		'0.3.0',
 		true
 	);
 
@@ -343,6 +407,28 @@ function lms_site_core_enqueue_frontend_assets(): void {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'lms_site_core_enqueue_frontend_assets', 20 );
+
+/**
+ * Add a neutral project-support action beside the account action.
+ */
+function lms_site_core_add_support_menu_item( string $items, $args ): string {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return $items;
+	}
+
+	$theme_location = is_object( $args ) && isset( $args->theme_location )
+		? (string) $args->theme_location
+		: '';
+
+	if ( ! in_array( $theme_location, array( 'primary', 'primary_navigation' ), true ) ) {
+		return $items;
+	}
+
+	$items .= '<li class="menu-item lms-site-core-support-item"><a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Support</a></li>';
+
+	return $items;
+}
+add_filter( 'wp_nav_menu_items', 'lms_site_core_add_support_menu_item', 29, 2 );
 
 /**
  * Add the account action to the primary navigation.
@@ -411,8 +497,21 @@ function lms_site_core_render_frontend_dialogs(): void {
 		<div class="lms-site-core-modal-panel">
 			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
 			<h2 id="lms-access-title">Chưa được cấp quyền học</h2>
-			<p class="lms-site-core-modal-intro">Tài khoản của bạn chưa được cấp quyền cho khóa học này.</p>
+			<p class="lms-site-core-modal-intro" data-lms-access-message>Tài khoản của bạn chưa được cấp quyền cho khóa học này.</p>
 			<a class="lms-site-core-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Liên hệ qua Zalo</a>
+		</div>
+	</div>
+	<div id="lms-support-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-support-title" hidden>
+		<div class="lms-site-core-modal-panel lms-site-core-support-panel">
+			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
+			<h2 id="lms-support-title">Ủng hộ dự án</h2>
+			<p class="lms-site-core-modal-intro">Nếu nội dung hữu ích, bạn có thể ủng hộ dự án bằng chuyển khoản.</p>
+			<img class="lms-site-core-bank-placeholder" src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/images/bank-placeholder.svg' ); ?>" alt="Ảnh minh họa thông tin ngân hàng">
+			<div class="lms-site-core-bank-details">
+				<strong>Thông tin ngân hàng sẽ cập nhật</strong>
+				<span>Ngân hàng demo · STK 0000 0000 0000</span>
+				<span>Chủ tài khoản: Bel Nguyễn</span>
+			</div>
 		</div>
 	</div>
 	<?php
@@ -468,10 +567,15 @@ function lms_site_core_course_detail_buttons( array $buttons, $course, $user ): 
 		return $buttons;
 	}
 
-	$label = is_user_logged_in() ? 'Liên hệ để học' : 'Đăng nhập để học';
+	$contact_required = lms_site_core_is_contact_course( $course_id );
+	$label            = $contact_required
+		? 'Liên hệ để nhận khóa học'
+		: ( is_user_logged_in() ? 'Liên hệ để học' : 'Đăng nhập để học' );
+	$contact_attribute = $contact_required ? ' data-lms-contact-only="1"' : '';
 	$buttons['btn_buy'] = sprintf(
-		'<button type="button" class="lp-button button lms-site-core-course-access-trigger" data-lms-course-request="1" data-course-id="%d">%s</button>',
+		'<button type="button" class="lp-button button lms-site-core-course-access-trigger" data-lms-course-request="1" data-course-id="%d"%s>%s</button>',
 		esc_attr( $course_id ),
+		$contact_attribute,
 		esc_html( $label )
 	);
 

@@ -93,3 +93,19 @@ Sau khi workflow deploy thành công:
 - Repo local đã có remote GitHub: `https://github.com/sunny251010/aeluong-lms.git`.
 - Child theme lms-kadence-child và custom plugin lms-site-core đã có trong repository; sau khi deploy cần active thủ công trên từng môi trường.
 - Homepage production chưa đổi cho tới khi plugin được active trên production.
+
+
+### Smoke test bổ sung cho flow mới
+
+- Mở /courses/ và xác nhận có ba card: cơ bản, nâng cao và miễn phí cho sinh viên.
+- Click Support, xác nhận modal ngân hàng mở và đang hiển thị placeholder demo; chỉ thay ảnh/thông tin thật khi đã xác nhận dữ liệu nhận tiền.
+- Logout rồi click CTA khóa học có phí: login modal mở.
+- Với khóa miễn phí cho sinh viên: CTA mở modal liên hệ Zalo, không mở checkout.
+- Đăng nhập tài khoản đã được cấp quyền và xác nhận CTA là Tiếp tục học.
+
+
+### Dữ liệu LearnPress trên production
+
+GitHub Actions hiện chỉ deploy source trong wp-content, không đồng bộ database local. Vì vậy ba course và lesson mẫu được tạo local chưa tự xuất hiện trên hosting.
+
+Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. Với course miễn phí, tick checkbox Contact admin before enrollment trong hộp Course access; sau đó kiểm tra CTA mở modal Zalo.

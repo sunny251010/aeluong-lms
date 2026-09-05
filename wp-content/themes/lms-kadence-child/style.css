@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.3.0
+Version: 0.5.1
 Text Domain: lms-kadence-child
 */
 
@@ -379,4 +379,129 @@ body.lms-site-core-modal-open {
   .lms-site-core-modal-panel {
     padding: 24px 20px;
   }
+}
+
+
+/* Header actions */
+#primary-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#primary-menu .lms-site-core-support-item {
+  margin-left: auto;
+}
+
+#primary-menu .lms-site-core-account-item {
+  margin-left: 0;
+}
+
+#primary-menu .lms-site-core-support-link {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #155eef;
+  border-radius: 6px;
+  padding: 8px 14px;
+  background: #fff;
+  color: #155eef;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+#primary-menu .lms-site-core-support-link:hover,
+#primary-menu .lms-site-core-support-link:focus {
+  background: #eef4ff;
+  color: #0b4dcc;
+}
+
+.lms-site-core-bank-placeholder {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 1;
+  margin: 0 auto 20px;
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+  background: #f7f9fc;
+}
+
+.lms-site-core-bank-details {
+  display: grid;
+  gap: 6px;
+  color: #536173;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.lms-site-core-bank-details strong {
+  color: #172033;
+}
+
+@media (max-width: 767px) {
+  #primary-menu {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  #primary-menu .lms-site-core-support-item {
+    margin-left: 0;
+  }
+}
+
+
+/* Force the project archive into a responsive card grid. */
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course {
+  display: flex !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course > .course-item {
+  display: flex !important;
+  width: 100%;
+  flex-direction: column !important;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-content {
+  display: flex !important;
+  flex: 1;
+  flex-direction: column !important;
+}
+
+@media (max-width: 992px) {
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-thumbnail {
+  width: 100% !important;
+  min-width: 100%;
+  flex: none;
+}
+
+.lp-archive-courses ul.learn-press-courses.lp-list-courses-no-css > li.course .course-thumbnail .course-img {
+  width: 100%;
 }

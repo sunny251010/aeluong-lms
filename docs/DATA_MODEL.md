@@ -62,3 +62,11 @@ Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/funct
 - Local database đã thay đổi do tạo course, section, lesson, hai user test và một enrollment LearnPress.
 - Custom plugin lms-site-core không tạo custom table hoặc migration.
 - Không commit database dump.
+
+
+## Dữ liệu khóa học hiện tại
+
+- Course ID 13: Giao tiếp tiếng Anh cơ bản, giữ enrollment test local hiện có.
+- Course ID 33: Giao tiếp tiếng Anh nâng cao, có section và lesson mẫu.
+- Course ID 34: Giao tiếp tiếng Anh miễn phí cho sinh viên, có section và lesson mẫu; meta _lms_contact_course = 1 để yêu cầu liên hệ admin qua Zalo trước khi cấp quyền.
+- Modal Support hiện dùng ảnh placeholder và thông tin ngân hàng demo; chưa phải thông tin nhận tiền thật.
