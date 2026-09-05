@@ -138,3 +138,8 @@ Courses và Contact được căn giữa vùng header. Donation và account acti
 ### Cấp quyền học thủ công
 
 Admin có thể mở LearnPress > Enroll student, chọn WordPress user và published course để tạo enrollment trực tiếp bằng API/model của LearnPress. Luồng này không đi qua checkout/payment và không tạo custom table.
+
+
+### Quản lý Student trong wp-admin
+
+Plugin tạo role Student với quyền cơ bản như Subscriber. Admin có thể mở LearnPress > Students & enrollment để tạo Student, tìm kiếm danh sách theo tên/username/email và chọn các course được cấp quyền. Bản ghi enrollment vẫn do LearnPress quản lý; plugin không tạo custom table.

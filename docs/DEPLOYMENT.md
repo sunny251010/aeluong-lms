@@ -125,3 +125,7 @@ Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. 
 - Vào LearnPress > Enroll student, chọn học viên và khóa học, bấm Enroll student.
 - Đăng nhập bằng tài khoản vừa cấp quyền và kiểm tra CTA chuyển thành Continue/ Tiếp tục học.
 - Thử submit lại cùng cặp học viên/khóa học để xác nhận hệ thống báo đã có quyền, không tạo enrollment trùng.
+
+
+- Vào LearnPress > Students & enrollment để tạo Student mới, tìm kiếm Student và cấp quyền theo course.
+- Sau khi tạo, gửi username/password cho học viên qua kênh bảo mật; không đưa mật khẩu vào GitHub hoặc docs.

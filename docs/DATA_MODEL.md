@@ -75,3 +75,8 @@ Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/funct
 ## Cấp quyền học thủ công
 
 Plugin không tạo bảng dữ liệu riêng. Khi admin cấp quyền trong LearnPress > Enroll student, LearnPress tạo user-course enrollment với status enrolled; nếu enrollment đang active thì không tạo bản ghi trùng.
+
+
+## Quản lý Student
+
+Student là WordPress role có slug student. Thông tin tài khoản lưu trong wp_users/wp_usermeta. Quyền học từng course lưu trong enrollment của LearnPress; giao diện quản trị chỉ gọi model/API LearnPress, không tạo bảng riêng.

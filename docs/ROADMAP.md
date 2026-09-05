@@ -78,3 +78,6 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 - [x] Tạm chuyển user chưa có quyền khỏi LearnPress checkout về luồng course/access modal; giữ checkout cho payment sau này.
 
 - [x] Admin cấp quyền trực tiếp cho học viên theo từng course, không cần checkout/payment.
+
+
+- [x] Role Student và màn hình admin tạo/tìm kiếm học viên, cấp quyền theo course.
