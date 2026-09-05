@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.5.0
+ * Version: 0.5.1
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -461,12 +461,27 @@ function lms_site_core_render_enrollment_admin_page(): void {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="lms_site_core_create_student">
 					<?php wp_nonce_field( 'lms_site_core_create_student', 'lms_site_core_create_student_nonce' ); ?>
-					<table class="form-table" role="presentation">
-						<tr><th><label for="lms-student-name">Full name</label></th><td><input class="regular-text" id="lms-student-name" name="student_name" type="text"></td></tr>
-						<tr><th><label for="lms-student-username">Username</label></th><td><input class="regular-text" id="lms-student-username" name="student_username" type="text" required></td></tr>
-						<tr><th><label for="lms-student-email">Email</label></th><td><input class="regular-text" id="lms-student-email" name="student_email" type="email"></td></tr>
-						<tr><th><label for="lms-student-password">Password</label></th><td><input class="regular-text" id="lms-student-password" name="student_password" type="password" required></td></tr>
-					</table>
+					<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:700px;">
+						<p style="margin:0;">
+							<label for="lms-student-name"><strong>Full name</strong></label><br>
+							<input style="width:100%;" id="lms-student-name" name="student_name" type="text">
+						</p>
+						<p style="margin:0;">
+							<label for="lms-student-username"><strong>Username</strong></label><br>
+							<input style="width:100%;" id="lms-student-username" name="student_username" type="text" required>
+						</p>
+						<p style="margin:0;">
+							<label for="lms-student-email"><strong>Email</strong></label><br>
+							<input style="width:100%;" id="lms-student-email" name="student_email" type="email">
+						</p>
+						<p style="margin:0;">
+							<label for="lms-student-password"><strong>Password</strong></label><br>
+							<span style="display:flex;gap:8px;align-items:center;">
+								<input style="width:100%;min-width:0;" id="lms-student-password" name="student_password" type="password" required>
+								<button type="button" class="button" id="lms-student-password-toggle" aria-pressed="false">Show</button>
+							</span>
+						</p>
+					</div>
 					<?php submit_button( 'Create student' ); ?>
 				</form>
 			</div>
@@ -482,11 +497,11 @@ function lms_site_core_render_enrollment_admin_page(): void {
 						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=lms-site-core-enroll' ) ); ?>">Reset</a>
 					</p>
 				</form>
-				<p class="description">Newest Student accounts appear first. Select a row to manage course access.</p>
+				<p class="description">Sorted by registration date, newest first. Select a row to manage course access.</p>
 			</div>
 		</div>
 
-		<h2>Student accounts</h2>
+		<h2>Recently registered students</h2>
 		<table class="widefat striped" style="max-width:1100px;">
 			<thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Registered</th><th>Action</th></tr></thead>
 			<tbody>
@@ -532,6 +547,22 @@ function lms_site_core_render_enrollment_admin_page(): void {
 				</form>
 			</div>
 		<?php endif; ?>
+
+		<script>
+		(function () {
+			var password = document.getElementById( 'lms-student-password' );
+			var toggle = document.getElementById( 'lms-student-password-toggle' );
+			if ( ! password || ! toggle ) {
+				return;
+			}
+			toggle.addEventListener( 'click', function () {
+				var visible = 'password' === password.type;
+				password.type = visible ? 'text' : 'password';
+				toggle.textContent = visible ? 'Hide' : 'Show';
+				toggle.setAttribute( 'aria-pressed', visible ? 'true' : 'false' );
+			} );
+		}());
+		</script>
 	</div>
 	<?php
 }
@@ -771,7 +802,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.5.0',
+		'0.5.1',
 		true
 	);
 

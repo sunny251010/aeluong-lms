@@ -142,4 +142,4 @@ Admin có thể mở LearnPress > Enroll student, chọn WordPress user và publ
 
 ### Quản lý Student trong wp-admin
 
-Plugin tạo role Student với quyền cơ bản như Subscriber. Admin có thể mở LearnPress > Students & enrollment để tạo Student, tìm kiếm danh sách theo tên/username/email và chọn các course được cấp quyền. Bản ghi enrollment vẫn do LearnPress quản lý; plugin không tạo custom table.
+Plugin tạo role Student với quyền cơ bản như Subscriber. Admin có thể mở LearnPress > Students & enrollment để tạo Student, tìm kiếm danh sách theo tên/username/email và chọn các course được cấp quyền. Bản ghi enrollment vẫn do LearnPress quản lý; plugin không tạo custom table. Danh sách mặc định sắp xếp tài khoản mới đăng ký trước; form tạo Student đặt Full name và Username trên cùng một hàng, còn Password có nút Show/Hide.

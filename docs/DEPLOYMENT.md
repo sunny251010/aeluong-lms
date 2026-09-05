@@ -129,3 +129,5 @@ Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. 
 
 - Vào LearnPress > Students & enrollment để tạo Student mới, tìm kiếm Student và cấp quyền theo course.
 - Sau khi tạo, gửi username/password cho học viên qua kênh bảo mật; không đưa mật khẩu vào GitHub hoặc docs.
+- Kiểm tra danh sách mặc định đã sắp xếp Student mới đăng ký gần nhất ở đầu bảng.
+- Kiểm tra Full name và Username nằm cùng hàng trong form tạo Student; bấm Show/Hide để xác nhận mật khẩu đổi kiểu hiển thị.

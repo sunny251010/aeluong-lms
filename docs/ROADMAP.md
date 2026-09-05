@@ -2,6 +2,8 @@
 
 ## Phase hiện tại: Phase 1 - Đồng bộ môi trường và nền tảng WordPress/LearnPress
 
+- Admin Enrollment đã có danh sách Student mới đăng ký hiển thị trước; form tạo Student hỗ trợ Full name/Username theo hàng ngang và Show/Hide Password.
+
 Mục tiêu:
 
 - Khởi tạo Git repo local.
