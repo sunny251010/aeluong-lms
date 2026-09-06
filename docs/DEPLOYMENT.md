@@ -158,3 +158,5 @@ Form chỉ gửi email, không tạo bảng dữ liệu riêng. Không đưa ema
 - Khi logged out, Login mở modal; khi logged in, item Login hiển thị avatar và display name, trỏ tới profile LearnPress nếu có.
 
 - Với user đã đăng nhập, plugin ưu tiên learn_press_user_profile_url(); nếu LearnPress không expose function này thì dùng page có slug lp-profile, cuối cùng mới dùng #.
+
+- Contact page production cần có slug contact; nếu nội dung page đang rỗng, plugin 0.9.2 trở lên tự render form Contact bằng fallback.

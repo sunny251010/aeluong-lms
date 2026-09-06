@@ -158,3 +158,5 @@ Contact dùng body class riêng để child theme ẩn hero/breadcrumb mặc đ�
 Desktop dùng Primary Menu riêng cho Courses/Contact và một nhóm action riêng ở cột right của Kadence cho Donation/account; mobile vẫn giữ action trong mobile menu.
 
 Secondary Navigation là menu WordPress do admin quản lý thủ công, gồm các custom link #lms-support-modal và #lms-login-modal. Plugin chỉ lọc location secondary để thêm class, modal trigger và chuyển item Login thành avatar/profile URL khi user đã đăng nhập; không tự chèn item vào Primary hoặc render nhóm header riêng.
+
+- Contact page là dữ liệu database; plugin cung cấp shortcode lms_site_contact_form và tự render fallback khi page slug contact đang rỗng, nên deploy code không cần đồng bộ post_content từ local.

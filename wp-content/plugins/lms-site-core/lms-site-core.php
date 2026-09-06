@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.9.1
+ * Version: 0.9.2
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -759,6 +759,25 @@ function lms_site_core_render_contact_form(): string {
 add_shortcode( 'lms_site_contact_form', 'lms_site_core_render_contact_form' );
 
 /**
+ * Render the project Contact form when the existing Contact page has no saved content.
+ *
+ * Page content is stored in the WordPress database, so it is not transported by Git deploy.
+ */
+function lms_site_core_contact_page_content_fallback( string $content ): string {
+	if ( is_admin() || ! is_page( 'contact' ) || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+
+	if ( '' !== trim( wp_strip_all_tags( $content ) ) || has_shortcode( $content, 'lms_site_contact_form' ) ) {
+		return $content;
+	}
+
+	return do_shortcode( '[lms_site_contact_form]' );
+}
+add_filter( 'the_content', 'lms_site_core_contact_page_content_fallback', 20 );
+
+
+/**
  * Send public Contact form submissions to the site administrator.
  */
 function lms_site_core_process_contact_form(): void {
@@ -1092,7 +1111,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.9.1',
+		'0.9.2',
 		true
 	);
 
