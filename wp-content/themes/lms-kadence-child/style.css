@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.6.0
+Version: 0.6.1
 Text Domain: lms-kadence-child
 */
 
@@ -1042,4 +1042,135 @@ body.lms-site-core-contact-page .content-area {
     box-sizing: border-box;
     justify-content: flex-start;
   }
+}
+
+
+/* Secondary Navigation actions managed through WordPress menu items. */
+.lms-donation-menu-item > a,
+.lms-login-menu-item > a,
+.lms-user-menu-item > a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid #155eef;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lms-donation-menu-item > a {
+  background: #fff;
+  color: #155eef;
+}
+
+.lms-donation-menu-item > a:hover,
+.lms-donation-menu-item > a:focus {
+  background: #eef4ff;
+  color: #0b4dcc;
+}
+
+.lms-login-menu-item > a,
+.lms-user-menu-item > a {
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: auto !important;
+  gap: 8px;
+  background: #155eef;
+  color: #fff;
+}
+
+.lms-login-menu-item > a:hover,
+.lms-login-menu-item > a:focus,
+.lms-user-menu-item > a:hover,
+.lms-user-menu-item > a:focus {
+  border-color: #0b4dcc;
+  background: #0b4dcc;
+  color: #fff;
+}
+
+.lms-user-avatar {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.lms-user-menu-name {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 140px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .lms-donation-menu-item > a,
+  .lms-login-menu-item > a,
+  .lms-user-menu-item > a {
+    white-space: normal;
+  }
+
+  .lms-user-menu-name {
+    max-width: none;
+  }
+}
+
+
+@media (min-width: 1025px) {
+  #secondary-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.secondary-navigation #secondary-menu .lms-login-menu-item > a,
+.secondary-navigation #secondary-menu .lms-user-menu-item > a {
+  border-color: #155eef;
+  background: #155eef;
+  color: #fff !important;
+}
+
+.secondary-navigation #secondary-menu .lms-login-menu-item > a:hover,
+.secondary-navigation #secondary-menu .lms-login-menu-item > a:focus,
+.secondary-navigation #secondary-menu .lms-user-menu-item > a:hover,
+.secondary-navigation #secondary-menu .lms-user-menu-item > a:focus {
+  border-color: #0b4dcc;
+  background: #0b4dcc;
+  color: #fff !important;
+}
+
+
+/* Kadence can set menu links to a vertical flex layout; keep the logged-in action horizontal. */
+#secondary-menu > .lms-user-menu-item > a,
+#secondary-menu > .lms-login-menu-item > a {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  height: 42px !important;
+  padding: 5px 12px !important;
+  gap: 8px !important;
+  line-height: 1 !important;
+}
+
+#secondary-menu > .lms-user-menu-item > a > .lms-user-avatar {
+  display: block !important;
+  margin: 0 !important;
+}
+
+#secondary-menu > .lms-user-menu-item > a > .lms-user-menu-name {
+  display: inline-block !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }

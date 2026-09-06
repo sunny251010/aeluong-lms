@@ -156,3 +156,5 @@ Plugin cung cấp shortcode [lms_site_contact_form] cho trang Contact. Form hỗ
 Contact dùng body class riêng để child theme ẩn hero/breadcrumb mặc định của Kadence và dựng lại nền page và panel form responsive, không thêm banner/hero riêng; plugin vẫn giữ toàn bộ logic form độc lập với theme.
 
 Desktop dùng Primary Menu riêng cho Courses/Contact và một nhóm action riêng ở cột right của Kadence cho Donation/account; mobile vẫn giữ action trong mobile menu.
+
+Secondary Navigation là menu WordPress do admin quản lý thủ công, gồm các custom link #lms-support-modal và #lms-login-modal. Plugin chỉ lọc location secondary để thêm class, modal trigger và chuyển item Login thành avatar/profile URL khi user đã đăng nhập; không tự chèn item vào Primary hoặc render nhóm header riêng.

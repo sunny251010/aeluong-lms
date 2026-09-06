@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.8.2
+ * Version: 0.9.1
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1092,7 +1092,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.8.2',
+		'0.9.1',
 		true
 	);
 
@@ -1116,99 +1116,98 @@ function lms_site_core_enqueue_frontend_assets(): void {
 add_action( 'wp_enqueue_scripts', 'lms_site_core_enqueue_frontend_assets', 20 );
 
 /**
- * Render the Donation link markup for either the primary menu or the header action group.
+ * Resolve the action fragment used by a manually managed navigation item.
  */
-function lms_site_core_support_link_markup(): string {
-	return '<a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Donation</a>';
+function lms_site_core_menu_item_fragment( $item ): string {
+	$url = is_object( $item ) && isset( $item->url ) ? (string) $item->url : '';
+
+	if ( 0 === strpos( $url, '#' ) ) {
+		return sanitize_key( substr( $url, 1 ) );
+	}
+
+	$fragment = wp_parse_url( $url, PHP_URL_FRAGMENT );
+
+	return is_string( $fragment ) ? sanitize_key( $fragment ) : '';
 }
 
 /**
- * Render the account action markup for either the primary menu or the header action group.
+ * Check whether a menu filter is rendering Kadence's Secondary Navigation.
  */
-function lms_site_core_account_link_markup(): string {
-	if ( is_user_logged_in() ) {
-		$user        = wp_get_current_user();
-		$profile_url  = function_exists( 'learn_press_user_profile_url' )
-			? learn_press_user_profile_url()
-			: get_edit_profile_url( $user->ID );
-		$avatar       = get_avatar( $user->ID, 32, '', $user->display_name, array( 'class' => array( 'lms-site-core-avatar' ) ) );
-		$display_name = esc_html( $user->display_name ?: $user->user_login );
-
-		return sprintf(
-			'<button type="button" class="lms-site-core-account-link" aria-expanded="false" aria-haspopup="true">%s<span class="lms-site-core-account-name">%s</span></button><span class="lms-site-core-account-dropdown"><a href="%s">Tài khoản</a><a href="%s">Đăng xuất</a></span>',
-			$avatar,
-			$display_name,
-			esc_url( $profile_url ),
-			esc_url( wp_logout_url( home_url( '/' ) ) )
-		);
-	}
-
-	return '<a href="#lms-login-modal" class="lms-site-core-account-link" data-lms-login-trigger="1">Đăng nhập</a>';
+function lms_site_core_is_secondary_navigation( $args ): bool {
+	return is_object( $args ) && isset( $args->theme_location ) && 'secondary' === (string) $args->theme_location;
 }
 
 /**
- * Keep only content links in Primary Menu on desktop; action links are rendered in the right header column.
+ * Mark only manually added Secondary Navigation action items.
  */
-function lms_site_core_add_support_menu_item( string $items, $args ): string {
-	if ( is_admin() && ! wp_doing_ajax() ) {
+function lms_site_core_mark_secondary_menu_items( array $items, $args ): array {
+	if ( ! lms_site_core_is_secondary_navigation( $args ) ) {
 		return $items;
 	}
 
-	$theme_location = is_object( $args ) && isset( $args->theme_location )
-		? (string) $args->theme_location
-		: '';
+	foreach ( $items as $item ) {
+		$fragment = lms_site_core_menu_item_fragment( $item );
 
-	if ( ! in_array( $theme_location, array( 'primary', 'primary_navigation' ), true ) ) {
-		return $items;
+		if ( 'lms-support-modal' === $fragment ) {
+			$item->classes = array_values( array_unique( array_merge( (array) $item->classes, array( 'lms-donation-menu-item' ) ) ) );
+		} elseif ( 'lms-login-modal' === $fragment ) {
+			$class = is_user_logged_in() ? 'lms-user-menu-item' : 'lms-login-menu-item';
+			$item->classes = array_values( array_unique( array_merge( (array) $item->classes, array( $class ) ) ) );
+		}
 	}
-
-	$items .= '<li class="menu-item lms-site-core-support-item">' . lms_site_core_support_link_markup() . '</li>';
 
 	return $items;
 }
-add_filter( 'wp_nav_menu_items', 'lms_site_core_add_support_menu_item', 29, 2 );
+add_filter( 'wp_nav_menu_objects', 'lms_site_core_mark_secondary_menu_items', 20, 2 );
 
 /**
- * Add the account action to the mobile menu; desktop renders it in a separate header group.
+ * Add modal triggers or the authenticated profile URL to Secondary Navigation links.
  */
-function lms_site_core_add_account_menu_item( string $items, $args ): string {
-	if ( is_admin() && ! wp_doing_ajax() ) {
-		return $items;
+function lms_site_core_secondary_link_attributes( array $atts, $item, $args, int $depth ): array {
+	if ( ! lms_site_core_is_secondary_navigation( $args ) ) {
+		return $atts;
 	}
 
-	$theme_location = is_object( $args ) && isset( $args->theme_location )
-		? (string) $args->theme_location
-		: '';
+	$fragment = lms_site_core_menu_item_fragment( $item );
 
-	if ( ! in_array( $theme_location, array( 'primary', 'primary_navigation' ), true ) ) {
-		return $items;
+	if ( 'lms-support-modal' === $fragment ) {
+		$atts['data-lms-support-trigger'] = '1';
+	} elseif ( 'lms-login-modal' === $fragment ) {
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+			$profile_url = function_exists( 'learn_press_user_profile_url' )
+				? (string) learn_press_user_profile_url()
+				: '';
+			if ( ! $profile_url ) {
+				$profile_page = get_page_by_path( 'lp-profile' );
+				$profile_url  = $profile_page ? (string) get_permalink( $profile_page ) : '';
+			}
+			$atts['href'] = $profile_url ?: '#';
+			unset( $atts['data-lms-login-trigger'] );
+		} else {
+			$atts['data-lms-login-trigger'] = '1';
+		}
 	}
 
-	$items .= '<li class="menu-item lms-site-core-account-item">' . lms_site_core_account_link_markup() . '</li>';
-
-	return $items;
+	return $atts;
 }
-add_filter( 'wp_nav_menu_items', 'lms_site_core_add_account_menu_item', 30, 2 );
+add_filter( 'nav_menu_link_attributes', 'lms_site_core_secondary_link_attributes', 20, 4 );
 
 /**
- * Render Donation and account actions in Kadence's right header column on desktop.
+ * Replace the logged-in Login label with the current user's avatar and display name.
  */
-function lms_site_core_render_header_actions( string $row, string $column ): void {
-	if ( 'main' !== $row || 'right' !== $column || ( is_admin() && ! wp_doing_ajax() ) ) {
-		return;
+function lms_site_core_secondary_menu_item_title( string $title, $item, $args, int $depth ): string {
+	if ( ! lms_site_core_is_secondary_navigation( $args ) || ! is_user_logged_in() || 'lms-login-modal' !== lms_site_core_menu_item_fragment( $item ) ) {
+		return $title;
 	}
-	?>
-	<div class="lms-site-core-header-actions" aria-label="Tác vụ tài khoản">
-		<div class="lms-site-core-header-action lms-site-core-header-donation">
-			<?php echo lms_site_core_support_link_markup(); ?>
-		</div>
-		<div class="lms-site-core-header-action lms-site-core-header-account">
-			<?php echo lms_site_core_account_link_markup(); ?>
-		</div>
-	</div>
-	<?php
+
+	$user        = wp_get_current_user();
+	$display_name = $user->display_name ?: $user->user_login;
+	$avatar      = get_avatar( $user->ID, 32, '', $display_name, array( 'class' => array( 'lms-user-avatar' ) ) );
+
+	return $avatar . '<span class="lms-user-menu-name">' . esc_html( $display_name ) . '</span>';
 }
-add_action( 'kadence_render_header_column', 'lms_site_core_render_header_actions', 30, 2 );
+add_filter( 'nav_menu_item_title', 'lms_site_core_secondary_menu_item_title', 20, 4 );
 
 /**
  * Render the login and access dialogs once per frontend page.

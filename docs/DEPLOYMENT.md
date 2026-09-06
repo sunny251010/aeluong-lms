@@ -148,3 +148,13 @@ Sau khi deploy plugin, kiểm tra trên production:
 5. Gửi một góp ý thử nghiệm. Xác nhận người gửi nhận thông báo thành công và email tới địa chỉ Settings > General > Administration Email. Nếu GoDaddy chưa gửi mail ra ngoài, vẫn dùng nút Zalo để liên hệ và cấu hình mail sau.
 
 Form chỉ gửi email, không tạo bảng dữ liệu riêng. Không đưa email, mật khẩu hoặc nội dung góp ý thật vào Git.
+
+
+### Cấu hình hai menu trên production
+
+- Primary: chỉ gán menu có Courses và Contact.
+- Secondary: gán menu có hai custom link Donation (#lms-support-modal) và Đăng nhập (#lms-login-modal).
+- Không thêm Donation/Login thủ công vào Primary; plugin chỉ style và xử lý đúng menu location Secondary.
+- Khi logged out, Login mở modal; khi logged in, item Login hiển thị avatar và display name, trỏ tới profile LearnPress nếu có.
+
+- Với user đã đăng nhập, plugin ưu tiên learn_press_user_profile_url(); nếu LearnPress không expose function này thì dùng page có slug lp-profile, cuối cùng mới dùng #.
