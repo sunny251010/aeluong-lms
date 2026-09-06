@@ -120,6 +120,10 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 - Plugin cung cấp checkbox Contact admin before enrollment cho các course cần admin cấp quyền trước khi học.
 
 
+### Course assets và modal
+
+Ba course hiện tại dùng ảnh raster trong custom plugin làm nguồn dự phòng và đồng thời được upload vào WordPress Media Library để gán Featured image. Media Library và featured_media là dữ liệu database/uploads, không được deploy bằng Git; production cần upload ảnh và gán lại Featured image. Login modal và Donation modal dùng chung panel, max-width hiện là 508px (tăng 48px so với trước).
+
 ### Hiển thị danh sách khóa học
 
 Trang archive khóa học mặc định dùng chế độ Grid/Card để người học dễ quét nội dung. Các nút chuyển layout của LearnPress vẫn được giữ lại để người dùng đổi sang List khi cần; CSS của child theme chỉ áp dụng bố cục tương ứng với data-layout hiện tại.

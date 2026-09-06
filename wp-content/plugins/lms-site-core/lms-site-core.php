@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.5.1
+ * Version: 0.6.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -658,6 +658,121 @@ function lms_site_core_course_id( $course ): int {
 }
 
 /**
+ * Resolve the project-owned fallback image for a course.
+ */
+function lms_site_core_course_image_asset_url( int $course_id ): string {
+	$slug = sanitize_title( (string) get_post_field( 'post_name', $course_id ) );
+	$assets = array(
+		'giao-tiep-tieng-anh-co-ban'          => 'course-english-basic.png',
+		'giao-tiep-tieng-anh-nang-cao'        => 'course-english-advanced.png',
+		'giao-tiep-tieng-anh-mien-phi-cho-sinh-vien' => 'course-english-scholarship.png',
+	);
+
+	if ( ! isset( $assets[ $slug ] ) ) {
+		return '';
+	}
+
+	return plugin_dir_url( __FILE__ ) . 'assets/images/courses/' . $assets[ $slug ];
+}
+
+/**
+ * Keep course cards visually complete without relying on uploads being deployed.
+ */
+function lms_site_core_course_thumbnail_fallback( string $html, int $post_id, int $post_thumbnail_id, $size, array $attr ): string {
+	if ( '' !== $html || 'lp_course' !== get_post_type( $post_id ) ) {
+		return $html;
+	}
+
+	$image_url = lms_site_core_course_image_asset_url( $post_id );
+	if ( '' === $image_url ) {
+		return $html;
+	}
+
+	$size_name = is_string( $size ) ? sanitize_html_class( $size ) : 'course';
+	return sprintf(
+		'<img src="%s" alt="%s" class="attachment-%s size-%s wp-post-image" loading="lazy">',
+		esc_url( $image_url ),
+		esc_attr( get_the_title( $post_id ) ),
+		$size_name,
+		$size_name
+	);
+}
+add_filter( 'post_thumbnail_html', 'lms_site_core_course_thumbnail_fallback', 20, 5 );
+
+/**
+ * Replace LearnPress's no-image placeholder for project-owned courses.
+ */
+function lms_site_core_learnpress_course_image_fallback( string $html, int $course_id, string $size, array $attr ): string {
+	if ( 'lp_course' !== get_post_type( $course_id ) || has_post_thumbnail( $course_id ) ) {
+		return $html;
+	}
+
+	$image_url = lms_site_core_course_image_asset_url( $course_id );
+	if ( '' === $image_url ) {
+		return $html;
+	}
+
+	$alt = esc_attr( get_the_title( $course_id ) );
+	$class = isset( $attr['class'] ) ? sanitize_html_class( (string) $attr['class'] ) : 'course-image';
+	return sprintf(
+		'<img src="%s" alt="%s" class="%s" loading="lazy">',
+		esc_url( $image_url ),
+		$alt,
+		$class
+	);
+}
+add_filter( 'learn-press/course/image', 'lms_site_core_learnpress_course_image_fallback', 20, 4 );
+
+/**
+ * Keep LearnPress's archive API aligned with the project-owned course images.
+ */
+function lms_site_core_filter_course_api_image( $course_data, $course ): object {
+	if ( is_object( $course_data ) && is_object( $course ) && ! has_post_thumbnail( lms_site_core_course_id( $course ) ) ) {
+		$image_url = lms_site_core_course_image_asset_url( lms_site_core_course_id( $course ) );
+		if ( '' !== $image_url ) {
+			$course_data->image = $image_url;
+		}
+	}
+
+	return $course_data;
+}
+add_filter( 'learnPress/prepare_struct_courses_response/courseObjPrepare', 'lms_site_core_filter_course_api_image', 20, 2 );
+
+/**
+ * Patch LearnPress REST course responses used by the archive JavaScript.
+ */
+function lms_site_core_filter_course_rest_response( $response, $server, $request ) {
+	$route = (string) $request->get_route();
+	if ( 0 !== strpos( $route, '/learnpress/v1/courses' ) || is_wp_error( $response ) || ! method_exists( $response, 'get_data' ) ) {
+		return $response;
+	}
+
+	$data = $response->get_data();
+	$items = isset( $data[0] ) && is_array( $data[0] ) ? $data : array( $data );
+	$changed = false;
+
+	foreach ( $items as $index => $item ) {
+		$course_id = isset( $item['id'] ) ? absint( $item['id'] ) : 0;
+		$image_url = lms_site_core_course_image_asset_url( $course_id );
+		if ( $course_id > 0 && '' !== $image_url && isset( $item['image'] ) && false !== strpos( (string) $item['image'], 'no-image.png' ) ) {
+			$items[ $index ]['image'] = $image_url;
+			$changed = true;
+		}
+	}
+
+	if ( $changed ) {
+		$response->set_data( isset( $data[0] ) && is_array( $data[0] ) ? $items : $items[0] );
+	}
+
+	return $response;
+}
+add_filter( 'rest_post_dispatch', 'lms_site_core_filter_course_rest_response', 20, 3 );
+
+
+
+
+
+/**
  * Identify courses that require admin contact before access is granted.
  */
 function lms_site_core_is_contact_course( int $course_id ): bool {
@@ -802,7 +917,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.5.1',
+		'0.6.0',
 		true
 	);
 

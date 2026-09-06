@@ -120,6 +120,10 @@ Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. 
 
 
 - Kiểm tra header: Courses và Contact ở giữa, Donation và account ở bên phải; bấm Donation để mở bank modal.
+- Kiểm tra ba course đã có ảnh card riêng, mô tả mới và khóa Cơ bản có thêm các bài học mới.
+- Vào Media > Add New trên production, upload ba file trong wp-content/plugins/lms-site-core/assets/images/courses/, sau đó mở từng course và chọn ảnh tương ứng tại Featured image.
+- Kiểm tra LearnPress REST/card đang trả URL /wp-content/uploads/ sau khi gán Featured image.
+- Kiểm tra login modal và Donation modal rộng hơn trước 48px trên desktop, đồng thời không tràn màn hình trên mobile.
 
 
 - Vào LearnPress > Enroll student, chọn học viên và khóa học, bấm Enroll student.

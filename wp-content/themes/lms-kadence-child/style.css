@@ -248,7 +248,7 @@ body.lms-site-core-modal-open {
 
 .lms-site-core-modal-panel {
   position: relative;
-  width: min(100%, 460px);
+  width: min(100%, 508px);
   border: 1px solid #dfe5ec;
   border-radius: 8px;
   padding: 30px;
