@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.6.0
+ * Version: 0.8.2
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -647,6 +647,181 @@ function lms_site_core_zalo_url(): string {
 }
 
 /**
+ * Resolve the project Contact page URL.
+ */
+function lms_site_core_contact_page_url(): string {
+	$contact_page = get_page_by_path( 'contact' );
+	return $contact_page instanceof WP_Post ? get_permalink( $contact_page ) : home_url( '/contact/' );
+}
+
+/**
+ * Add a stable body class so the child theme can own the Contact page layout.
+ */
+function lms_site_core_contact_body_class( array $classes ): array {
+	if ( is_page( 'contact' ) ) {
+		$classes[] = 'lms-site-core-contact-page';
+	}
+
+	return $classes;
+}
+add_filter( 'body_class', 'lms_site_core_contact_body_class' );
+
+/**
+ * Render the public feedback/contact form.
+ */
+function lms_site_core_render_contact_form(): string {
+	$categories = array(
+		'course_feedback' => 'Góp ý về khóa học',
+		'website_feedback' => 'Góp ý về website',
+		'account_support' => 'Hỗ trợ tài khoản',
+		'other'           => 'Nội dung khác',
+	);
+	$courses = get_posts(
+		array(
+			'post_type'      => 'lp_course',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
+	$user = wp_get_current_user();
+	$status = isset( $_GET['lms_contact'] ) ? sanitize_key( wp_unslash( $_GET['lms_contact'] ) ) : '';
+	$selected_course = isset( $_GET['course_id'] ) ? absint( $_GET['course_id'] ) : 0;
+	$notice = '';
+	if ( 'success' === $status ) {
+		$notice = '<p class="lms-site-core-contact-notice lms-site-core-contact-notice-success" role="status">Cảm ơn bạn. Góp ý đã được gửi thành công.</p>';
+	} elseif ( 'error' === $status ) {
+		$notice = '<p class="lms-site-core-contact-notice lms-site-core-contact-notice-error" role="alert">Chưa thể gửi góp ý. Vui lòng thử lại hoặc nhắn Zalo trực tiếp.</p>';
+	}
+	ob_start();
+	?>
+	<section class="lms-site-core-contact" aria-labelledby="lms-contact-title">
+		<div class="lms-site-core-contact-content">
+		<div class="lms-site-core-contact-header">
+			<p class="lms-site-core-contact-eyebrow">Contact</p>
+			<h1 id="lms-contact-title">Liên hệ và góp ý</h1>
+			<p>Gửi góp ý về khóa học, website hoặc tài khoản. Mình sẽ xem và phản hồi sớm nhất có thể.</p>
+		</div>
+		<?php echo $notice; ?>
+		<div class="lms-site-core-contact-layout">
+			<form class="lms-site-core-contact-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="lms_site_core_submit_contact">
+				<?php wp_nonce_field( 'lms_site_core_submit_contact', 'lms_site_core_submit_contact_nonce' ); ?>
+				<p class="lms-site-core-contact-honeypot" aria-hidden="true">
+					<label for="lms-contact-website">Website</label>
+					<input id="lms-contact-website" name="website" type="text" tabindex="-1" autocomplete="off">
+				</p>
+				<div class="lms-site-core-contact-fields">
+					<p>
+						<label for="lms-contact-name">Họ và tên</label>
+						<input id="lms-contact-name" name="contact_name" type="text" value="<?php echo esc_attr( $user->exists() ? $user->display_name : '' ); ?>" required>
+					</p>
+					<p>
+						<label for="lms-contact-email">Email</label>
+						<input id="lms-contact-email" name="contact_email" type="email" value="<?php echo esc_attr( $user->exists() ? $user->user_email : '' ); ?>" required>
+					</p>
+				</div>
+				<p>
+					<label for="lms-contact-category">Nội dung liên hệ</label>
+					<select id="lms-contact-category" name="contact_category" required>
+						<?php foreach ( $categories as $value => $label ) : ?>
+							<option value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<p>
+					<label for="lms-contact-course">Khóa học liên quan <span>(không bắt buộc)</span></label>
+					<select id="lms-contact-course" name="course_id">
+						<option value="0">Chọn khóa học</option>
+						<?php foreach ( $courses as $course ) : ?>
+							<option value="<?php echo esc_attr( $course->ID ); ?>" <?php selected( $selected_course, $course->ID ); ?>><?php echo esc_html( $course->post_title ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<p>
+					<label for="lms-contact-message">Nội dung góp ý</label>
+					<textarea id="lms-contact-message" name="contact_message" rows="7" required placeholder="Bạn muốn chia sẻ điều gì?"></textarea>
+				</p>
+				<button class="lms-site-core-contact-submit" type="submit">Gửi góp ý</button>
+			</form>
+			<aside class="lms-site-core-contact-aside">
+				<h2>Liên hệ nhanh</h2>
+				<p>Nếu cần hỗ trợ đăng nhập, nhận quyền học hoặc trao đổi nhanh, bạn có thể nhắn trực tiếp qua Zalo.</p>
+				<a class="lms-site-core-contact-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Nhắn Zalo 0984 715 632</a>
+			</aside>
+		</div>
+		</div>
+	</section>
+	<?php
+	return (string) ob_get_clean();
+}
+add_shortcode( 'lms_site_contact_form', 'lms_site_core_render_contact_form' );
+
+/**
+ * Send public Contact form submissions to the site administrator.
+ */
+function lms_site_core_process_contact_form(): void {
+	$redirect_url = lms_site_core_contact_page_url();
+	if ( ! isset( $_POST['lms_site_core_submit_contact_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['lms_site_core_submit_contact_nonce'] ) ), 'lms_site_core_submit_contact' ) ) {
+		wp_safe_redirect( add_query_arg( 'lms_contact', 'error', $redirect_url ) );
+		exit;
+	}
+	if ( ! empty( $_POST['website'] ) ) {
+		wp_safe_redirect( add_query_arg( 'lms_contact', 'success', $redirect_url ) );
+		exit;
+	}
+
+	$name     = isset( $_POST['contact_name'] ) ? sanitize_text_field( wp_unslash( $_POST['contact_name'] ) ) : '';
+	$email    = isset( $_POST['contact_email'] ) ? sanitize_email( wp_unslash( $_POST['contact_email'] ) ) : '';
+	$category = isset( $_POST['contact_category'] ) ? sanitize_key( wp_unslash( $_POST['contact_category'] ) ) : 'other';
+	$course_id = isset( $_POST['course_id'] ) ? absint( $_POST['course_id'] ) : 0;
+	$message  = isset( $_POST['contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contact_message'] ) ) : '';
+	$allowed_categories = array(
+		'course_feedback' => 'Góp ý về khóa học',
+		'website_feedback' => 'Góp ý về website',
+		'account_support' => 'Hỗ trợ tài khoản',
+		'other'           => 'Nội dung khác',
+	);
+	if ( '' === $name || ! is_email( $email ) || '' === $message || ! isset( $allowed_categories[ $category ] ) ) {
+		wp_safe_redirect( add_query_arg( 'lms_contact', 'error', $redirect_url ) );
+		exit;
+	}
+
+	$course_title = 'Không chọn khóa học';
+	if ( $course_id > 0 ) {
+		$course = get_post( $course_id );
+		if ( ! $course || 'lp_course' !== $course->post_type || 'publish' !== $course->post_status ) {
+			$course_id = 0;
+		} else {
+			$course_title = $course->post_title;
+		}
+	}
+	$user = wp_get_current_user();
+	$subject = sprintf( '[%s] Góp ý mới từ %s', get_bloginfo( 'name' ), $name );
+	$body = implode( "\n", array(
+		'Người gửi: ' . $name,
+		'Email: ' . $email,
+		'Loại liên hệ: ' . $allowed_categories[ $category ],
+		'Khóa học: ' . $course_title,
+		'User ID: ' . ( $user->exists() ? $user->ID : 'Khách chưa đăng nhập' ),
+		'',
+		'Nội dung:',
+		$message,
+	) );
+	$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+	if ( is_email( $email ) ) {
+		$headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
+	}
+	$sent = wp_mail( get_option( 'admin_email' ), $subject, $body, $headers );
+	wp_safe_redirect( add_query_arg( 'lms_contact', $sent ? 'success' : 'error', $redirect_url ) );
+	exit;
+}
+add_action( 'admin_post_lms_site_core_submit_contact', 'lms_site_core_process_contact_form' );
+add_action( 'admin_post_nopriv_lms_site_core_submit_contact', 'lms_site_core_process_contact_form' );
+
+
+/**
  * Resolve a LearnPress course ID from its model.
  */
 function lms_site_core_course_id( $course ): int {
@@ -917,7 +1092,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.6.0',
+		'0.8.2',
 		true
 	);
 
@@ -941,7 +1116,38 @@ function lms_site_core_enqueue_frontend_assets(): void {
 add_action( 'wp_enqueue_scripts', 'lms_site_core_enqueue_frontend_assets', 20 );
 
 /**
- * Add a neutral project-support action beside the account action.
+ * Render the Donation link markup for either the primary menu or the header action group.
+ */
+function lms_site_core_support_link_markup(): string {
+	return '<a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Donation</a>';
+}
+
+/**
+ * Render the account action markup for either the primary menu or the header action group.
+ */
+function lms_site_core_account_link_markup(): string {
+	if ( is_user_logged_in() ) {
+		$user        = wp_get_current_user();
+		$profile_url  = function_exists( 'learn_press_user_profile_url' )
+			? learn_press_user_profile_url()
+			: get_edit_profile_url( $user->ID );
+		$avatar       = get_avatar( $user->ID, 32, '', $user->display_name, array( 'class' => array( 'lms-site-core-avatar' ) ) );
+		$display_name = esc_html( $user->display_name ?: $user->user_login );
+
+		return sprintf(
+			'<button type="button" class="lms-site-core-account-link" aria-expanded="false" aria-haspopup="true">%s<span class="lms-site-core-account-name">%s</span></button><span class="lms-site-core-account-dropdown"><a href="%s">Tài khoản</a><a href="%s">Đăng xuất</a></span>',
+			$avatar,
+			$display_name,
+			esc_url( $profile_url ),
+			esc_url( wp_logout_url( home_url( '/' ) ) )
+		);
+	}
+
+	return '<a href="#lms-login-modal" class="lms-site-core-account-link" data-lms-login-trigger="1">Đăng nhập</a>';
+}
+
+/**
+ * Keep only content links in Primary Menu on desktop; action links are rendered in the right header column.
  */
 function lms_site_core_add_support_menu_item( string $items, $args ): string {
 	if ( is_admin() && ! wp_doing_ajax() ) {
@@ -956,14 +1162,14 @@ function lms_site_core_add_support_menu_item( string $items, $args ): string {
 		return $items;
 	}
 
-	$items .= '<li class="menu-item lms-site-core-support-item"><a href="#lms-support-modal" class="lms-site-core-support-link" data-lms-support-trigger="1">Donation</a></li>';
+	$items .= '<li class="menu-item lms-site-core-support-item">' . lms_site_core_support_link_markup() . '</li>';
 
 	return $items;
 }
 add_filter( 'wp_nav_menu_items', 'lms_site_core_add_support_menu_item', 29, 2 );
 
 /**
- * Add the account action to the primary navigation.
+ * Add the account action to the mobile menu; desktop renders it in a separate header group.
  */
 function lms_site_core_add_account_menu_item( string $items, $args ): string {
 	if ( is_admin() && ! wp_doing_ajax() ) {
@@ -978,27 +1184,31 @@ function lms_site_core_add_account_menu_item( string $items, $args ): string {
 		return $items;
 	}
 
-	if ( is_user_logged_in() ) {
-		$user       = wp_get_current_user();
-		$profile_url = function_exists( 'learn_press_user_profile_url' )
-			? learn_press_user_profile_url()
-			: get_edit_profile_url( $user->ID );
-		$avatar     = get_avatar( $user->ID, 32, '', $user->display_name, array( 'class' => array( 'lms-site-core-avatar' ) ) );
-
-		$items .= sprintf(
-			'<li class="menu-item lms-site-core-account-item"><button type="button" class="lms-site-core-account-link" aria-expanded="false" aria-haspopup="true">%s<span class="lms-site-core-account-name">%s</span></button><span class="lms-site-core-account-dropdown"><a href="%s">Tài khoản</a><a href="%s">Đăng xuất</a></span></li>',
-			$avatar,
-			esc_html( $user->display_name ?: $user->user_login ),
-			esc_url( $profile_url ),
-			esc_url( wp_logout_url( home_url( '/' ) ) )
-		);
-	} else {
-		$items .= '<li class="menu-item lms-site-core-account-item"><a href="#lms-login-modal" class="lms-site-core-account-link" data-lms-login-trigger="1">Đăng nhập</a></li>';
-	}
+	$items .= '<li class="menu-item lms-site-core-account-item">' . lms_site_core_account_link_markup() . '</li>';
 
 	return $items;
 }
 add_filter( 'wp_nav_menu_items', 'lms_site_core_add_account_menu_item', 30, 2 );
+
+/**
+ * Render Donation and account actions in Kadence's right header column on desktop.
+ */
+function lms_site_core_render_header_actions( string $row, string $column ): void {
+	if ( 'main' !== $row || 'right' !== $column || ( is_admin() && ! wp_doing_ajax() ) ) {
+		return;
+	}
+	?>
+	<div class="lms-site-core-header-actions" aria-label="Tác vụ tài khoản">
+		<div class="lms-site-core-header-action lms-site-core-header-donation">
+			<?php echo lms_site_core_support_link_markup(); ?>
+		</div>
+		<div class="lms-site-core-header-action lms-site-core-header-account">
+			<?php echo lms_site_core_account_link_markup(); ?>
+		</div>
+	</div>
+	<?php
+}
+add_action( 'kadence_render_header_column', 'lms_site_core_render_header_actions', 30, 2 );
 
 /**
  * Render the login and access dialogs once per frontend page.

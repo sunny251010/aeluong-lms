@@ -151,15 +151,14 @@ function lmsSiteCoreInit() {
 			return;
 		}
 
-		if (!event.target.closest('.lms-site-core-account-item')) {
-			var accountItem = document.querySelector('.lms-site-core-account-item.is-open');
-			if (accountItem) {
+		if (!event.target.closest('.lms-site-core-account-item, .lms-site-core-header-account')) {
+			document.querySelectorAll('.lms-site-core-account-item.is-open, .lms-site-core-header-account.is-open').forEach(function (accountItem) {
 				accountItem.classList.remove('is-open');
 				var openButton = accountItem.querySelector('[aria-haspopup="true"]');
 				if (openButton) {
 					openButton.setAttribute('aria-expanded', 'false');
 				}
-			}
+			});
 		}
 	});
 

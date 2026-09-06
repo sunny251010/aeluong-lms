@@ -84,3 +84,6 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 
 
 - [x] Role Student và màn hình admin tạo/tìm kiếm học viên, cấp quyền theo course.
+
+
+- [x] Tạo trang Contact có form góp ý cho khóa học, website và hỗ trợ tài khoản; có chọn khóa học liên quan, gửi email admin và liên hệ Zalo.

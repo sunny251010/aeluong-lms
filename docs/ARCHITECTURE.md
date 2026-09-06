@@ -147,3 +147,12 @@ Admin có thể mở LearnPress > Enroll student, chọn WordPress user và publ
 ### Quản lý Student trong wp-admin
 
 Plugin tạo role Student với quyền cơ bản như Subscriber. Admin có thể mở LearnPress > Students & enrollment để tạo Student, tìm kiếm danh sách theo tên/username/email và chọn các course được cấp quyền. Bản ghi enrollment vẫn do LearnPress quản lý; plugin không tạo custom table. Danh sách mặc định sắp xếp tài khoản mới đăng ký trước; form tạo Student đặt Full name và Username trên cùng một hàng, còn Password có nút Show/Hide.
+
+
+### Trang Contact và feedback
+
+Plugin cung cấp shortcode [lms_site_contact_form] cho trang Contact. Form hỗ trợ góp ý về khóa học, website, tài khoản hoặc nội dung khác; có thể chọn khóa học liên quan và tự điền tên/email khi người dùng đã đăng nhập. Dữ liệu được nonce bảo vệ, lọc đầu vào và gửi tới admin_email bằng wp_mail; plugin không tạo custom table và không lưu nội dung góp ý trong database. Zalo 0984 715 632 là kênh liên hệ nhanh dự phòng.
+
+Contact dùng body class riêng để child theme ẩn hero/breadcrumb mặc định của Kadence và dựng lại nền page và panel form responsive, không thêm banner/hero riêng; plugin vẫn giữ toàn bộ logic form độc lập với theme.
+
+Desktop dùng Primary Menu riêng cho Courses/Contact và một nhóm action riêng ở cột right của Kadence cho Donation/account; mobile vẫn giữ action trong mobile menu.

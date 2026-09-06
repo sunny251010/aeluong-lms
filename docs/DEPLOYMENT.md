@@ -135,3 +135,16 @@ Trên production, tạo hoặc cập nhật course bằng LearnPress > Courses. 
 - Sau khi tạo, gửi username/password cho học viên qua kênh bảo mật; không đưa mật khẩu vào GitHub hoặc docs.
 - Kiểm tra danh sách mặc định đã sắp xếp Student mới đăng ký gần nhất ở đầu bảng.
 - Kiểm tra Full name và Username nằm cùng hàng trong form tạo Student; bấm Show/Hide để xác nhận mật khẩu đổi kiểu hiển thị.
+
+
+### Trang Contact và form góp ý
+
+Sau khi deploy plugin, kiểm tra trên production:
+
+1. Vào Pages > Add New, tạo trang có title Contact, slug contact, nội dung [lms_site_contact_form], rồi Publish.
+2. Vào Appearance > Menus hoặc phần quản lý menu đang dùng, đặt tab Contact trỏ tới /contact/. Nếu item hiện tại đang là taxonomy/menu archive và click bị quay về Courses, xóa item đó rồi tạo lại bằng Custom Link với URL /contact/.
+3. Mở /contact/ ở chế độ logged out và logged in; kiểm tra form, danh sách khóa học và nút Zalo 0984 715 632.
+4. Kiểm tra ở desktop và mobile: form chuyển thành một cột, không có horizontal overflow; page chỉ cuộn dọc khi nội dung form vượt chiều cao viewport.
+5. Gửi một góp ý thử nghiệm. Xác nhận người gửi nhận thông báo thành công và email tới địa chỉ Settings > General > Administration Email. Nếu GoDaddy chưa gửi mail ra ngoài, vẫn dùng nút Zalo để liên hệ và cấu hình mail sau.
+
+Form chỉ gửi email, không tạo bảng dữ liệu riêng. Không đưa email, mật khẩu hoặc nội dung góp ý thật vào Git.
