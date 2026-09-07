@@ -160,3 +160,12 @@ Desktop dùng Primary Menu riêng cho Courses/Contact và một nhóm action ri�
 Secondary Navigation là menu WordPress do admin quản lý thủ công, gồm các custom link #lms-support-modal và #lms-login-modal. Plugin chỉ lọc location secondary để thêm class, modal trigger và chuyển item Login thành avatar/profile URL khi user đã đăng nhập; không tự chèn item vào Primary hoặc render nhóm header riêng.
 
 - Contact page là dữ liệu database; plugin cung cấp shortcode lms_site_contact_form và tự render fallback khi page slug contact đang rỗng, nên deploy code không cần đồng bộ post_content từ local.
+
+## Cập nhật local ngày 2026-09-07
+
+- Phát triển local trước; việc đồng bộ production được hoãn theo quyết định của người dùng.
+- LMS Site Core 0.10.0 bổ sung kiểm tra điều kiện enroll tại hooks model LearnPress, bao gồm modern và legacy; giao diện ẩn nút không đủ để bảo vệ cấp quyền thủ công. Admin tiếp tục dùng tool native hiện có.
+- CTA Continue tại archive lấy item tiếp theo qua UserCourseModel::get_item_continue() và CourseModel::get_item_link(); không tạo hệ thống progress riêng.
+- Lesson authoring dùng tùy chọn native learn_press_enable_gutenberg_lesson=yes. Plugin không ép show_in_rest cho khách hoặc thay permission của LearnPress. Course/Quiz editor giữ cấu hình hiện có.
+- includes/lesson-authoring.php đăng ký 3 core block patterns giới hạn cho lp_lesson và metabox hướng dẫn copy nội dung. Không thêm dependency, page builder hay block custom.
+- Đây là nền tảng soạn bài theo khối; chưa mô phỏng chính xác Google Sites private vì chưa kết nối được Chrome để đối chiếu.

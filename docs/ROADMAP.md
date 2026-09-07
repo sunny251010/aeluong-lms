@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase hiện tại: Phase 1 - Đồng bộ môi trường và nền tảng WordPress/LearnPress
+## Phase hiện tại: Hoàn thiện Phase 1 trên local và khởi đầu Lesson authoring
 
 - Admin Enrollment đã có danh sách Student mới đăng ký hiển thị trước; form tạo Student hỗ trợ Full name/Username theo hàng ngang và Show/Hide Password.
 - Đã bổ sung bộ ảnh course, mô tả nội dung và curriculum mở rộng cho khóa Cơ bản; modal frontend tăng 48px.
@@ -51,7 +51,7 @@ Thứ tự đề xuất:
 
 ## Phase 2 - Lesson authoring
 
-Mục tiêu tương lai:
+Mục tiêu đang bắt đầu trên local theo yêu cầu ngày 2026-09-07:
 
 - Tối ưu trải nghiệm nhập lesson từ nội dung Google Sites.
 - Ưu tiên Gutenberg/Block Editor.
@@ -72,7 +72,7 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 
 ## Nguyên tắc roadmap
 
-- Không triển khai Phase 2 khi chưa hoàn thành và kiểm chứng Phase 1.
+- Theo yêu cầu ngày 2026-09-07, bắt đầu nền tảng Lesson authoring song song với audit Phase 1 trên local. Chưa đánh dấu Phase 1 hoàn tất; kiểm thử trình duyệt và đối chiếu Google Sites vẫn còn chờ.
 - Không deploy production hoặc dùng destructive sync/delete nếu chưa được yêu cầu rõ.
 - Không thêm dependency hoặc framework lớn nếu project chưa thật sự cần.
 
@@ -87,3 +87,20 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 
 
 - [x] Tạo trang Contact có form góp ý cho khóa học, website và hỗ trợ tài khoản; có chọn khóa học liên quan, gửi email admin và liên hệ Zalo.
+
+## Audit và cập nhật local ngày 2026-09-07
+
+- Ưu tiên phát triển local; chuyển production để sau theo quyết định của người dùng.
+- [x] Audit HTTP/source/database: 3 course published, 7 lesson published; homepage, Courses, Contact hoạt động ở mức HTTP.
+- [x] Sửa lỗ hổng tự enroll ở backend: course miễn phí yêu cầu liên hệ admin trước đây vẫn được model LearnPress cho phép tự enroll. Bổ sung kiểm tra ở modern và legacy hooks.
+- [x] CTA Tiếp tục học ở archive dùng curriculum item do LearnPress chọn theo tiến độ.
+- [x] Bật tùy chọn Gutenberg native riêng cho Lesson trên local.
+- [x] Thêm 3 core block patterns và hướng dẫn nhập nội dung trong lesson editor; giữ bài cũ nguyên nội dung.
+- [x] Tạo bài mẫu Draft ID 57, chưa đưa vào curriculum.
+- [x] 30 integration checks đạt, PHP lint và JavaScript syntax đạt.
+- [ ] Kiểm thử trực quan desktop/mobile, modal keyboard/focus, editor kéo thả và copy từ hai Google Sites private. Chrome chưa có kết nối Browser hoạt động.
+- [ ] Đối chiếu nguồn Google Sites rồi tinh chỉnh thêm mẫu bài theo nội dung thật; chưa thực hiện import.
+- [ ] Donation vẫn là dữ liệu ngân hàng demo; thay trước khi nhận tiền thật.
+- [ ] Cân nhắc phân trang Students khi vượt 50 tài khoản; hiện query giới hạn 50, chưa có pagination.
+
+Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](LESSON_AUTHORING.md).

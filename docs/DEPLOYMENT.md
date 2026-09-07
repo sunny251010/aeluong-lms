@@ -160,3 +160,12 @@ Form chỉ gửi email, không tạo bảng dữ liệu riêng. Không đưa ema
 - Với user đã đăng nhập, plugin ưu tiên learn_press_user_profile_url(); nếu LearnPress không expose function này thì dùng page có slug lp-profile, cuối cùng mới dùng #.
 
 - Contact page production cần có slug contact; nếu nội dung page đang rỗng, plugin 0.9.2 trở lên tự render form Contact bằng fallback.
+- Child theme version 0.6.2 chứa rule ưu tiên cho input/select/textarea Contact để tránh Kadence ghi đè CSS trên Production.
+
+## Đối chiếu môi trường ngày 2026-09-06
+
+Xem [báo cáo đồng bộ local và production](ENVIRONMENT_SYNC_AUDIT.md) để biết chênh lệch version CSS, màu Kadence, CSS Site Designer và quy trình kiểm tra trước khi đồng bộ. Đây là kết quả audit HTTP/source; chưa hoàn tất kiểm thử trình duyệt hoặc đồng bộ production.
+
+## Lesson authoring và sửa quyền học — 2026-09-07
+
+Lượt này chỉ thay đổi local, chưa deploy. Khi chuyển hosting, dùng đầy đủ LMS Site Core 0.10.0 (gồm thư mục includes), xác nhận plugin active, bật LearnPress > Settings > Advanced > Enable gutenberg > Lesson, rồi xóa cache và kiểm thử guest/pending/enrolled/Continue/editor. Xem [hướng dẫn soạn bài](LESSON_AUTHORING.md). Việc chuyển bằng SCP cần xử lý database và uploads riêng; tránh chạy workflow bằng source cũ sau khi đã chép source local mới.

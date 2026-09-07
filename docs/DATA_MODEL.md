@@ -80,3 +80,11 @@ Plugin không tạo bảng dữ liệu riêng. Khi admin cấp quyền trong Lea
 ## Quản lý Student
 
 Student là WordPress role có slug student. Thông tin tài khoản lưu trong wp_users/wp_usermeta. Quyền học từng course lưu trong enrollment của LearnPress; giao diện quản trị chỉ gọi model/API LearnPress, không tạo bảng riêng.
+
+## DB change ngày 2026-09-07 — chỉ local
+
+- Option learn_press_enable_gutenberg_lesson: no → yes. Đây là tùy chọn LearnPress native, không phải migration schema.
+- Tạo lp_lesson Draft ID 57, slug lms-editor-sample, title [Mẫu local] Soạn bài bằng các khối nội dung. Chưa gắn vào curriculum và chưa publish.
+- Nội dung bài dạng core blocks vẫn nằm trong post_content, cùng revisions WordPress. 7 bài published cũ được giữ nguyên nội dung.
+- Integration tests tạo Student, lesson draft và enrollment tạm, sau đó xóa bằng WordPress/LearnPress APIs trong finally. Không giữ các fixture này; không gửi email trong test. Auto-increment ID có thể tăng sau test.
+- Không tạo custom table; không thay đổi production; không đưa DB dump, mật khẩu hoặc session vào Git.

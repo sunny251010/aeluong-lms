@@ -2,12 +2,14 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.9.2
+ * Version: 0.10.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
 
 defined( 'ABSPATH' ) || exit;
+
+require_once __DIR__ . '/includes/lesson-authoring.php';
 
 /**
  * Send the site homepage to LearnPress course archive.
@@ -1036,6 +1038,68 @@ function lms_site_core_user_has_course_access( int $course_id ): bool {
 	return lms_site_core_user_has_course_access_for_user( get_current_user_id(), $course_id );
 }
 
+
+/**
+ * Enforce manual enrollment in models, including REST and legacy flows.
+ * The dedicated administrator enrollment tool remains available.
+ */
+function lms_site_core_requires_manual_enrollment( int $course_id, int $user_id ): bool {
+	return $course_id > 0
+		&& ! current_user_can( 'manage_options' )
+		&& ! lms_site_core_user_has_course_access_for_user( $user_id, $course_id );
+}
+
+function lms_site_core_filter_can_enroll( $result, $course, $user ) {
+	$course_id = lms_site_core_course_id( $course );
+	$user_id   = is_object( $user ) && method_exists( $user, 'get_id' ) ? (int) $user->get_id() : 0;
+
+	if ( lms_site_core_requires_manual_enrollment( $course_id, $user_id ) ) {
+		return new WP_Error( 'lms_manual_enrollment_required', 'Vui lòng liên hệ quản trị viên để được cấp quyền học.' );
+	}
+
+	return $result;
+}
+add_filter( 'learn-press/user/can-enroll/course', 'lms_site_core_filter_can_enroll', 100, 3 );
+
+function lms_site_core_filter_legacy_can_enroll( $result, $course, $return_bool, $user ) {
+	$course_id = lms_site_core_course_id( $course );
+	$user_id   = is_object( $user ) && method_exists( $user, 'get_id' ) ? (int) $user->get_id() : 0;
+
+	if ( ! lms_site_core_requires_manual_enrollment( $course_id, $user_id ) ) {
+		return $result;
+	}
+
+	if ( $return_bool ) {
+		return false;
+	}
+
+	return (object) array(
+		'check'   => false,
+		'code'    => 'lms_manual_enrollment_required',
+		'message' => 'Vui lòng liên hệ quản trị viên để được cấp quyền học.',
+	);
+}
+add_filter( 'learn-press/user/can-enroll-course', 'lms_site_core_filter_legacy_can_enroll', 100, 4 );
+
+/**
+ * Resume using the next curriculum item selected by LearnPress progress.
+ */
+function lms_site_core_course_continue_url( int $course_id ): string {
+	$fallback = (string) get_permalink( $course_id );
+	if ( ! lms_site_core_user_has_course_access( $course_id ) ) {
+		return $fallback;
+	}
+
+	$enrollment = lms_site_core_get_user_course_enrollment( get_current_user_id(), $course_id );
+	if ( ! $enrollment || ! method_exists( $enrollment, 'get_item_continue' ) ) {
+		return $fallback;
+	}
+
+	$course = $enrollment->get_course_model();
+	$item   = $enrollment->get_item_continue();
+	return $course && $item ? $course->get_item_link( (int) $item->ID ) : $fallback;
+}
+
 /**
  * Render archive actions according to login and enrollment state.
  */
@@ -1069,7 +1133,7 @@ function lms_site_core_course_archive_cta( array $sections, $course, $settings )
 
 	$sections['btn_read_more'] = sprintf(
 		'<div class="course-readmore"><a href="%s" class="lms-site-core-course-cta"%s>%s</a></div>',
-		esc_url( $course->get_permalink() ),
+		esc_url( $has_access ? lms_site_core_course_continue_url( $course_id ) : $course->get_permalink() ),
 		$attributes,
 		esc_html( $label )
 	);
@@ -1111,7 +1175,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.9.2',
+		'0.10.0',
 		true
 	);
 

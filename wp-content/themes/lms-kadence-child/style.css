@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.6.1
+Version: 0.6.2
 Text Domain: lms-kadence-child
 */
 
@@ -1173,4 +1173,33 @@ body.lms-site-core-contact-page .content-area {
   display: inline-block !important;
   line-height: 1 !important;
   white-space: nowrap !important;
+}
+
+
+/* Keep Contact controls visible when Kadence loads its form reset after the child stylesheet. */
+body.lms-site-core-contact-page .lms-site-core-contact-form input[type="text"],
+body.lms-site-core-contact-page .lms-site-core-contact-form input[type="email"],
+body.lms-site-core-contact-page .lms-site-core-contact-form select,
+body.lms-site-core-contact-page .lms-site-core-contact-form textarea {
+  display: block !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #c7d0dc !important;
+  border-radius: 5px !important;
+  padding: 11px 12px !important;
+  background: #fff !important;
+  color: #172033 !important;
+  opacity: 1 !important;
+}
+
+body.lms-site-core-contact-page .lms-site-core-contact-form textarea {
+  min-height: 116px !important;
+}
+
+body.lms-site-core-contact-page .lms-site-core-contact-form input:focus,
+body.lms-site-core-contact-page .lms-site-core-contact-form select:focus,
+body.lms-site-core-contact-page .lms-site-core-contact-form textarea:focus {
+  border-color: #155eef !important;
+  outline: 2px solid rgba(21, 94, 239, .18) !important;
 }
