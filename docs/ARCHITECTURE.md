@@ -174,3 +174,8 @@ Secondary Navigation là menu WordPress do admin quản lý thủ công, gồm c
 ### Paste Google Sites đã đối chiếu
 
 Chrome đã kết nối và kiểm tra bảng IPA private. Lesson Classic dùng tiny_mce_before_init giới hạn lp_lesson để giữ typography khi paste; core Table mặc định vẫn chuẩn hóa nội dung. Không thêm builder, dependency hay route. Chi tiết và giới hạn trong LESSON_AUTHORING.md.
+
+
+### Donation settings trong wp-admin
+
+Donation modal đọc cấu hình từ option lms_site_core_donation_settings. Admin có thể thay tiêu đề, mô tả, thông báo ngân hàng, tên ngân hàng, số tài khoản, chủ tài khoản và ảnh QR trong Settings > LMS Site Core. Ảnh QR dùng Media Library; nếu chưa chọn ảnh riêng, plugin dùng placeholder nội bộ.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.10.0
+ * Version: 0.11.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -249,6 +249,204 @@ function lms_site_core_add_enrollment_admin_page(): void {
 	);
 }
 add_action( 'admin_menu', 'lms_site_core_add_enrollment_admin_page', 40 );
+
+/**
+ * Return the default Donation modal settings.
+ */
+function lms_site_core_donation_defaults(): array {
+	return array(
+		'title'       => 'Ủng hộ dự án',
+		'description' => 'Nếu nội dung hữu ích, bạn có thể ủng hộ dự án bằng chuyển khoản.',
+		'notice'      => 'Thông tin ngân hàng sẽ cập nhật',
+		'bank_name'   => 'Ngân hàng demo',
+		'account'     => 'STK 0000 0000 0000',
+		'holder'      => 'Bel Nguyễn',
+		'qr_image_id' => 0,
+	);
+}
+
+/**
+ * Read Donation settings from one WordPress option.
+ */
+function lms_site_core_get_donation_settings(): array {
+	$settings = wp_parse_args(
+		(array) get_option( 'lms_site_core_donation_settings', array() ),
+		lms_site_core_donation_defaults()
+	);
+
+	$custom_qr_url = $settings['qr_image_id']
+		? (string) wp_get_attachment_image_url( absint( $settings['qr_image_id'] ), 'medium' )
+		: '';
+	$settings['qr_image_id']  = absint( $settings['qr_image_id'] );
+	$settings['qr_image_url'] = $custom_qr_url ?: (string) plugin_dir_url( __FILE__ ) . 'assets/images/bank-placeholder.svg';
+
+	return $settings;
+}
+
+/**
+ * Sanitize Donation settings before saving.
+ */
+function lms_site_core_sanitize_donation_settings( $input ): array {
+	$input    = is_array( $input ) ? $input : array();
+	$defaults = lms_site_core_donation_defaults();
+
+	return array(
+		'title'       => isset( $input['title'] ) ? sanitize_text_field( $input['title'] ) : $defaults['title'],
+		'description' => isset( $input['description'] ) ? sanitize_textarea_field( $input['description'] ) : $defaults['description'],
+		'notice'      => isset( $input['notice'] ) ? sanitize_text_field( $input['notice'] ) : $defaults['notice'],
+		'bank_name'   => isset( $input['bank_name'] ) ? sanitize_text_field( $input['bank_name'] ) : $defaults['bank_name'],
+		'account'     => isset( $input['account'] ) ? sanitize_text_field( $input['account'] ) : $defaults['account'],
+		'holder'      => isset( $input['holder'] ) ? sanitize_text_field( $input['holder'] ) : $defaults['holder'],
+		'qr_image_id' => isset( $input['qr_image_id'] ) ? absint( $input['qr_image_id'] ) : 0,
+	);
+}
+
+/**
+ * Register the Donation settings screen under WordPress Settings.
+ */
+function lms_site_core_register_donation_settings(): void {
+	register_setting(
+		'lms_site_core_donation',
+		'lms_site_core_donation_settings',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'lms_site_core_sanitize_donation_settings',
+			'default'           => lms_site_core_donation_defaults(),
+		)
+	);
+
+	add_settings_section(
+		'lms_site_core_donation_section',
+		'Thông tin Donation modal',
+		function (): void {
+			echo '<p>Thay nội dung hiển thị và ảnh QR mà không cần sửa code.</p>';
+		},
+		'lms-site-core-donation'
+	);
+
+	$fields = array(
+		'title'       => array( 'Tiêu đề', 'text' ),
+		'description' => array( 'Mô tả', 'textarea' ),
+		'notice'      => array( 'Dòng thông báo ngân hàng', 'text' ),
+		'bank_name'   => array( 'Tên ngân hàng', 'text' ),
+		'account'     => array( 'Số tài khoản', 'text' ),
+		'holder'      => array( 'Chủ tài khoản', 'text' ),
+	);
+
+	foreach ( $fields as $key => $field ) {
+		add_settings_field(
+			'lms_site_core_donation_' . $key,
+			$field[0],
+			'lms_site_core_render_donation_text_field',
+			'lms-site-core-donation',
+			'lms_site_core_donation_section',
+			array( 'key' => $key, 'type' => $field[1] )
+		);
+	}
+
+	add_settings_field(
+		'lms_site_core_donation_qr_image',
+		'Ảnh QR',
+		'lms_site_core_render_donation_qr_field',
+		'lms-site-core-donation',
+		'lms_site_core_donation_section'
+	);
+}
+add_action( 'admin_init', 'lms_site_core_register_donation_settings' );
+
+/**
+ * Add the Donation settings screen.
+ */
+function lms_site_core_add_donation_settings_page(): void {
+	add_options_page(
+		'Donation - LMS Site Core',
+		'LMS Site Core',
+		'manage_options',
+		'lms-site-core-donation',
+		'lms_site_core_render_donation_settings_page'
+	);
+}
+add_action( 'admin_menu', 'lms_site_core_add_donation_settings_page', 41 );
+
+/**
+ * Render a text field in the Donation settings screen.
+ */
+function lms_site_core_render_donation_text_field( array $args ): void {
+	$settings = lms_site_core_get_donation_settings();
+	$key      = sanitize_key( $args['key'] );
+	$value    = isset( $settings[ $key ] ) ? (string) $settings[ $key ] : '';
+
+	if ( 'textarea' === $args['type'] ) {
+		echo '<textarea class="large-text" rows="3" name="lms_site_core_donation_settings[' . esc_attr( $key ) . ']">' . esc_textarea( $value ) . '</textarea>';
+		return;
+	}
+
+	echo '<input class="regular-text" type="text" name="lms_site_core_donation_settings[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '">';
+}
+
+/**
+ * Render the QR image picker in the Donation settings screen.
+ */
+function lms_site_core_render_donation_qr_field(): void {
+	$settings  = lms_site_core_get_donation_settings();
+	$image_id  = absint( $settings['qr_image_id'] );
+	$image_url = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'medium' ) : '';
+	?>
+	<div class="lms-site-core-donation-qr-field">
+		<input type="hidden" id="lms-site-core-donation-qr-image-id" name="lms_site_core_donation_settings[qr_image_id]" value="<?php echo esc_attr( $image_id ); ?>">
+		<img id="lms-site-core-donation-qr-preview" src="<?php echo esc_url( $image_url ); ?>" alt="QR hiện tại" style="<?php echo $image_url ? 'display:block;' : 'display:none;'; ?>max-width:220px;height:auto;margin-bottom:10px;">
+		<button type="button" class="button" id="lms-site-core-donation-qr-select">Chọn ảnh QR</button>
+		<button type="button" class="button" id="lms-site-core-donation-qr-remove" <?php disabled( ! $image_id ); ?>>Xóa ảnh</button>
+		<p class="description">Ảnh được chọn từ Media Library và chỉ dùng trong Donation modal.</p>
+	</div>
+	<script>
+		jQuery(function ($) {
+			let frame;
+			$('#lms-site-core-donation-qr-select').on('click', function (event) {
+				event.preventDefault();
+				if (frame) { frame.open(); return; }
+				frame = wp.media({ title: 'Chọn ảnh QR', button: { text: 'Dùng ảnh này' }, multiple: false, library: { type: 'image' } });
+				frame.on('select', function () {
+					const attachment = frame.state().get('selection').first().toJSON();
+					$('#lms-site-core-donation-qr-image-id').val(attachment.id);
+					$('#lms-site-core-donation-qr-preview').attr('src', attachment.url).show();
+					$('#lms-site-core-donation-qr-remove').prop('disabled', false);
+				});
+				frame.open();
+			});
+			$('#lms-site-core-donation-qr-remove').on('click', function (event) {
+				event.preventDefault();
+				$('#lms-site-core-donation-qr-image-id').val('0');
+				$('#lms-site-core-donation-qr-preview').attr('src', '').hide();
+				$(this).prop('disabled', true);
+			});
+		});
+	</script>
+	<?php
+}
+
+/**
+ * Render the Donation settings screen.
+ */
+function lms_site_core_render_donation_settings_page(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	wp_enqueue_media();
+	?>
+	<div class="wrap">
+		<h1>Donation</h1>
+		<form method="post" action="options.php">
+			<?php
+			settings_fields( 'lms_site_core_donation' );
+			do_settings_sections( 'lms-site-core-donation' );
+			submit_button( 'Lưu thay đổi' );
+			?>
+		</form>
+	</div>
+	<?php
+}
 
 /**
  * Find an active LearnPress enrollment for a specific user/course pair.
@@ -1325,16 +1523,17 @@ function lms_site_core_render_frontend_dialogs(): void {
 			<a class="lms-site-core-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Liên hệ qua Zalo</a>
 		</div>
 	</div>
+	<?php $donation = lms_site_core_get_donation_settings(); ?>
 	<div id="lms-support-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-support-title" hidden>
 		<div class="lms-site-core-modal-panel lms-site-core-support-panel">
 			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
-			<h2 id="lms-support-title">Ủng hộ dự án</h2>
-			<p class="lms-site-core-modal-intro">Nếu nội dung hữu ích, bạn có thể ủng hộ dự án bằng chuyển khoản.</p>
-			<img class="lms-site-core-bank-placeholder" src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/images/bank-placeholder.svg' ); ?>" alt="Ảnh minh họa thông tin ngân hàng">
+			<h2 id="lms-support-title"><?php echo esc_html( $donation['title'] ); ?></h2>
+			<p class="lms-site-core-modal-intro"><?php echo esc_html( $donation['description'] ); ?></p>
+			<img class="lms-site-core-bank-placeholder" src="<?php echo esc_url( $donation['qr_image_url'] ); ?>" alt="Ảnh QR thông tin ngân hàng">
 			<div class="lms-site-core-bank-details">
-				<strong>Thông tin ngân hàng sẽ cập nhật</strong>
-				<span>Ngân hàng demo · STK 0000 0000 0000</span>
-				<span>Chủ tài khoản: Bel Nguyễn</span>
+				<strong><?php echo esc_html( $donation['notice'] ); ?></strong>
+				<span><?php echo esc_html( $donation['bank_name'] . ' · ' . $donation['account'] ); ?></span>
+				<span><?php echo esc_html( 'Chủ tài khoản: ' . $donation['holder'] ); ?></span>
 			</div>
 		</div>
 	</div>

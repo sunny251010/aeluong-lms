@@ -93,3 +93,10 @@ Student là WordPress role có slug student. Thông tin tài khoản lưu trong 
 ### Kiểm thử paste Google Sites
 
 Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối chiếu định dạng. Chưa publish hoặc gắn curriculum. Không đổi schema/options; nội dung và revisions dùng post_content native. Không đưa nội dung private vào repository.
+
+
+## Donation settings
+
+- Option WordPress: lms_site_core_donation_settings.
+- Dữ liệu gồm text hiển thị và attachment ID của ảnh QR.
+- Không tạo custom table; attachment vẫn do Media Library quản lý.

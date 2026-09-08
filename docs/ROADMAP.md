@@ -111,3 +111,6 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Kết nối Chrome, xem LỘ TRÌNH và Phát Âm; nhận diện video và bảng HTML nhúng.
 - [x] Chỉnh paste Classic giữ typography riêng Lesson; kiểm tra bảng thật sau Save draft và reload.
 - [ ] Kiểm tra frontend/mobile, ảnh riêng tư và liên kết khi chuyển bài đầy đủ.
+
+
+- [x] Donation modal có thể cấu hình trong WP-Admin, bao gồm nội dung ngân hàng và ảnh QR từ Media Library.
