@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.6.2
+Version: 0.6.3
 Text Domain: lms-kadence-child
 */
 
@@ -1202,4 +1202,56 @@ body.lms-site-core-contact-page .lms-site-core-contact-form select:focus,
 body.lms-site-core-contact-page .lms-site-core-contact-form textarea:focus {
   border-color: #155eef !important;
   outline: 2px solid rgba(21, 94, 239, .18) !important;
+}
+
+/* Persistent Zalo contact action shared across the public frontend. */
+.lms-site-core-zalo-sticky {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 900;
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #005bd4;
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: #0068ff;
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(0, 54, 128, .22);
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  transition: background-color .2s ease, transform .2s ease;
+}
+
+.lms-site-core-zalo-sticky:hover,
+.lms-site-core-zalo-sticky:focus {
+  background: #005bd4;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.lms-site-core-zalo-sticky-label {
+  font-size: 1rem;
+}
+
+.lms-site-core-zalo-sticky-phone {
+  font-size: .88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+  .lms-site-core-zalo-sticky {
+    right: 16px;
+    bottom: 16px;
+    min-height: 44px;
+    padding: 8px 13px;
+  }
+
+  .lms-site-core-zalo-sticky-phone {
+    display: none;
+  }
 }

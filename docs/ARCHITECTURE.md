@@ -179,3 +179,5 @@ Chrome đã kết nối và kiểm tra bảng IPA private. Lesson Classic dùng 
 ### Donation settings trong wp-admin
 
 Donation modal đọc cấu hình từ option lms_site_core_donation_settings. Admin có thể thay tiêu đề, mô tả, thông báo ngân hàng, tên ngân hàng, số tài khoản, chủ tài khoản và ảnh QR trong Settings > LMS Site Core. Ảnh QR dùng Media Library; nếu chưa chọn ảnh riêng, plugin dùng placeholder nội bộ.
+
+- Sticky Zalo dùng chung option zalo_phone trong lms_site_core_donation_settings; Contact, access modal, frontend localized URL và sticky đều lấy từ helper này.

@@ -114,3 +114,5 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 
 
 - [x] Donation modal có thể cấu hình trong WP-Admin, bao gồm nội dung ngân hàng và ảnh QR từ Media Library.
+
+- [x] Thêm sticky Zalo và cấu hình một số Zalo dùng chung trong WP-Admin.

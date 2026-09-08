@@ -100,3 +100,5 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Option WordPress: lms_site_core_donation_settings.
 - Dữ liệu gồm text hiển thị và attachment ID của ảnh QR.
 - Không tạo custom table; attachment vẫn do Media Library quản lý.
+
+- Trường zalo_phone lưu số hiển thị; URL Zalo được chuẩn hóa từ số này khi render.

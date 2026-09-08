@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.11.0
+ * Version: 0.12.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -261,6 +261,7 @@ function lms_site_core_donation_defaults(): array {
 		'bank_name'   => 'Ngân hàng demo',
 		'account'     => 'STK 0000 0000 0000',
 		'holder'      => 'Bel Nguyễn',
+		'zalo_phone'  => '0984 715 632',
 		'qr_image_id' => 0,
 	);
 }
@@ -297,6 +298,7 @@ function lms_site_core_sanitize_donation_settings( $input ): array {
 		'bank_name'   => isset( $input['bank_name'] ) ? sanitize_text_field( $input['bank_name'] ) : $defaults['bank_name'],
 		'account'     => isset( $input['account'] ) ? sanitize_text_field( $input['account'] ) : $defaults['account'],
 		'holder'      => isset( $input['holder'] ) ? sanitize_text_field( $input['holder'] ) : $defaults['holder'],
+		'zalo_phone'  => isset( $input['zalo_phone'] ) ? sanitize_text_field( $input['zalo_phone'] ) : $defaults['zalo_phone'],
 		'qr_image_id' => isset( $input['qr_image_id'] ) ? absint( $input['qr_image_id'] ) : 0,
 	);
 }
@@ -331,6 +333,7 @@ function lms_site_core_register_donation_settings(): void {
 		'bank_name'   => array( 'Tên ngân hàng', 'text' ),
 		'account'     => array( 'Số tài khoản', 'text' ),
 		'holder'      => array( 'Chủ tài khoản', 'text' ),
+		'zalo_phone'  => array( 'Số Zalo', 'text' ),
 	);
 
 	foreach ( $fields as $key => $field ) {
@@ -842,8 +845,17 @@ add_filter( 'gettext', 'lms_site_core_translate_frontend', 20, 3 );
 /**
  * Keep the Zalo contact URL in one project-owned place.
  */
+function lms_site_core_zalo_phone(): string {
+	$settings = lms_site_core_get_donation_settings();
+	$phone    = trim( (string) ( $settings['zalo_phone'] ?? '' ) );
+
+	return $phone ?: '0984 715 632';
+}
+
 function lms_site_core_zalo_url(): string {
-	return 'https://zalo.me/0984715632';
+	$phone = preg_replace( '/\D+/', '', lms_site_core_zalo_phone() );
+
+	return $phone ? 'https://zalo.me/' . $phone : 'https://zalo.me/0984715632';
 }
 
 /**
@@ -948,7 +960,7 @@ function lms_site_core_render_contact_form(): string {
 			<aside class="lms-site-core-contact-aside">
 				<h2>Liên hệ nhanh</h2>
 				<p>Nếu cần hỗ trợ đăng nhập, nhận quyền học hoặc trao đổi nhanh, bạn có thể nhắn trực tiếp qua Zalo.</p>
-				<a class="lms-site-core-contact-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Nhắn Zalo 0984 715 632</a>
+				<a class="lms-site-core-contact-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Nhắn Zalo <?php echo esc_html( lms_site_core_zalo_phone() ); ?></a>
 			</aside>
 		</div>
 		</div>
@@ -1537,6 +1549,10 @@ function lms_site_core_render_frontend_dialogs(): void {
 			</div>
 		</div>
 	</div>
+	<a class="lms-site-core-zalo-sticky" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener" aria-label="Liên hệ Zalo">
+		<span class="lms-site-core-zalo-sticky-label">Zalo</span>
+		<span class="lms-site-core-zalo-sticky-phone"><?php echo esc_html( lms_site_core_zalo_phone() ); ?></span>
+	</a>
 	<?php
 }
 add_action( 'wp_footer', 'lms_site_core_render_frontend_dialogs', 20 );
