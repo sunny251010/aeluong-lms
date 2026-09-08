@@ -169,3 +169,8 @@ Secondary Navigation là menu WordPress do admin quản lý thủ công, gồm c
 - Lesson authoring dùng tùy chọn native learn_press_enable_gutenberg_lesson=yes. Plugin không ép show_in_rest cho khách hoặc thay permission của LearnPress. Course/Quiz editor giữ cấu hình hiện có.
 - includes/lesson-authoring.php đăng ký 3 core block patterns giới hạn cho lp_lesson và metabox hướng dẫn copy nội dung. Không thêm dependency, page builder hay block custom.
 - Đây là nền tảng soạn bài theo khối; chưa mô phỏng chính xác Google Sites private vì chưa kết nối được Chrome để đối chiếu.
+
+
+### Paste Google Sites đã đối chiếu
+
+Chrome đã kết nối và kiểm tra bảng IPA private. Lesson Classic dùng tiny_mce_before_init giới hạn lp_lesson để giữ typography khi paste; core Table mặc định vẫn chuẩn hóa nội dung. Không thêm builder, dependency hay route. Chi tiết và giới hạn trong LESSON_AUTHORING.md.

@@ -88,3 +88,8 @@ Student là WordPress role có slug student. Thông tin tài khoản lưu trong 
 - Nội dung bài dạng core blocks vẫn nằm trong post_content, cùng revisions WordPress. 7 bài published cũ được giữ nguyên nội dung.
 - Integration tests tạo Student, lesson draft và enrollment tạm, sau đó xóa bằng WordPress/LearnPress APIs trong finally. Không giữ các fixture này; không gửi email trong test. Auto-increment ID có thể tăng sau test.
 - Không tạo custom table; không thay đổi production; không đưa DB dump, mật khẩu hoặc session vào Git.
+
+
+### Kiểm thử paste Google Sites
+
+Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối chiếu định dạng. Chưa publish hoặc gắn curriculum. Không đổi schema/options; nội dung và revisions dùng post_content native. Không đưa nội dung private vào repository.

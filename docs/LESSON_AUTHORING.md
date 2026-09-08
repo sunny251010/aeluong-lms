@@ -33,3 +33,17 @@ Chưa xem được hai bài Google Sites private vì Chrome thiếu Browser exte
 
 - LearnPress Gutenberg: https://docs.thimpress.com/learnpress/faqs/
 - WordPress core block patterns: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
+
+
+## Copy giữ định dạng — kiểm thử ngày 2026-09-07
+
+Đã đối chiếu Google Sites private qua Chrome và copy bảng IPA thật từ Preview. Paste mặc định vào Table/Classic làm mất font-size và màu. Plugin cấu hình tiny_mce_before_init riêng cho lp_lesson, giữ danh sách CSS trình bày qua paste_webkit_styles và paste_retain_style_properties; không tắt sanitizer native, không thêm dependency.
+
+1. Google Sites: mở Preview, bôi đen phần nội dung rồi Ctrl+C. Bảng nhúng: click bên trong bảng, Ctrl+A rồi Ctrl+C chỉ trong vùng nhúng.
+2. Lesson: + → tìm Classic → chọn Classic → Edit contents → click vùng soạn thảo → Ctrl+V. Không dùng Ctrl+Shift+V.
+3. Chọn Save trong Classic, sau đó Save draft của Lesson. Không Convert to blocks nếu cần giữ định dạng nguồn.
+4. Xem Preview và kiểm tra trên điện thoại trước khi publish.
+
+Đã lưu và reload bản nháp ID 59: bảng 6 hàng/48 ô giữ màu đỏ, 24pt, Times New Roman/Lucida Sans Unicode, bold và căn giữa (358 phần tử có inline style). Chưa kiểm tra hiển thị frontend học viên/mobile; bố cục và khoảng cách còn phụ thuộc theme. Font-family được giữ nhưng thiết bị cần có font tương ứng; không tự tải font Google Sites.
+
+Ảnh riêng tư nên tải về rồi Add Media để lưu vào Media Library; paste ảnh URL không tự chuyển file sang WordPress. Video/iframe copy riêng bằng link YouTube hoặc khối nhúng. Link bài Google Sites vẫn trỏ về Google Sites và vẫn chịu quyền truy cập gốc, không tự map sang Lesson. Không cam kết copy toàn bộ trang gồm các iframe chỉ bằng một Ctrl+A.

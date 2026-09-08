@@ -169,3 +169,8 @@ Xem [báo cáo đồng bộ local và production](ENVIRONMENT_SYNC_AUDIT.md) đ�
 ## Lesson authoring và sửa quyền học — 2026-09-07
 
 Lượt này chỉ thay đổi local, chưa deploy. Khi chuyển hosting, dùng đầy đủ LMS Site Core 0.10.0 (gồm thư mục includes), xác nhận plugin active, bật LearnPress > Settings > Advanced > Enable gutenberg > Lesson, rồi xóa cache và kiểm thử guest/pending/enrolled/Continue/editor. Xem [hướng dẫn soạn bài](LESSON_AUTHORING.md). Việc chuyển bằng SCP cần xử lý database và uploads riêng; tránh chạy workflow bằng source cũ sau khi đã chép source local mới.
+
+
+### Cấu hình paste Lesson
+
+Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includes/lesson-authoring.php, giữ plugin active. Trong LearnPress Settings → Advanced → Enable gutenberg, bật Lesson nếu chưa bật. Reload editor rồi thử Classic → Edit contents → paste đoạn có màu/cỡ chữ → Save draft → reload → Preview. Không cần cài Classic Editor plugin hay migration DB. Không deploy bản nháp test ID 59. Production chưa thay đổi.

@@ -1,0 +1,6 @@
+body.post-type-lp_lesson #poststuff #post-body { min-width: 0; }
+body.post-type-lp_lesson #post-body-content { min-width: 0; }
+body.post-type-lp_lesson #wp-content-editor-container { background: white; }
+body.post-type-lp_lesson #content_ifr { min-height: 520px; }
+body.post-type-lp_lesson .lms-placement-row select { max-width: 100%; min-width: 0; }
+body.post-type-lp_lesson .lms-placement-row strong { overflow-wrap: anywhere; }

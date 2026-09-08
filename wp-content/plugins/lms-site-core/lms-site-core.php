@@ -1388,6 +1388,21 @@ function lms_site_core_course_detail_buttons( array $buttons, $course, $user ): 
 	$course_id = lms_site_core_course_id( $course );
 
 	if ( lms_site_core_user_has_course_access( $course_id ) ) {
+		$url = lms_site_core_course_continue_url( $course_id );
+		if ( $url !== (string) get_permalink( $course_id ) ) {
+			$enrollment = lms_site_core_get_user_course_enrollment( get_current_user_id(), $course_id );
+			$label = $enrollment && in_array( $enrollment->get_status(), array( 'finished', 'completed' ), true ) ? 'Ôn lại bài học' : 'Tiếp tục học';
+			// Replace only the native continue action; retain Finish/Retake controls.
+			foreach ( array( 'btn_continue_and_finish', 'btn_learning' ) as $key ) {
+				if ( isset( $buttons[ $key ] ) ) {
+					$buttons[ $key ] = preg_replace( '~<a\b[^>]*>\s*<button\b[^>]*class=["\'][^"\']*course-btn-continue[^"\']*["\'][^>]*>.*?</button>\s*</a>~s', '', $buttons[ $key ] );
+				}
+			}
+			$link = sprintf( '<a class="lp-button button lms-course-resume" href="%s">%s</a>', esc_url( $url ), esc_html( $label ) );
+			$buttons['btn_buy'] = $link;
+			$buttons['btn_enroll'] = '';
+			$buttons['btn_contact'] = '';
+		}
 		return $buttons;
 	}
 

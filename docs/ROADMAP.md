@@ -104,3 +104,10 @@ Chỉ cân nhắc khi có nhu cầu rõ:
 - [ ] Cân nhắc phân trang Students khi vượt 50 tài khoản; hiện query giới hạn 50, chưa có pagination.
 
 Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](LESSON_AUTHORING.md).
+
+
+### Tiến độ copy Google Sites
+
+- [x] Kết nối Chrome, xem LỘ TRÌNH và Phát Âm; nhận diện video và bảng HTML nhúng.
+- [x] Chỉnh paste Classic giữ typography riêng Lesson; kiểm tra bảng thật sau Save draft và reload.
+- [ ] Kiểm tra frontend/mobile, ảnh riêng tư và liên kết khi chuyển bài đầy đủ.

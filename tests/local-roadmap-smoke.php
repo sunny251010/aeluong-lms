@@ -69,7 +69,7 @@ try {
 	lms_smoke_check( str_contains($cta['btn_read_more'],esc_url($expected)), 'Archive CTA links directly to native lesson' );
 
 	wp_set_current_user( $admin->ID );
-	lms_smoke_check( get_option('learn_press_enable_gutenberg_lesson') === 'yes' && apply_filters('use_block_editor_for_post_type',true,'lp_lesson'), 'Native Lesson Gutenberg setting enabled' );
+	lms_smoke_check( ! apply_filters('use_block_editor_for_post_type',true,'lp_lesson'), 'Lesson uses native continuous Visual editor' );
 	$registry = WP_Block_Patterns_Registry::get_instance();
 	foreach (array('lesson-outline','text-and-image','two-columns') as $slug) {
 		$pattern = $registry->get_registered('lms-site-core/'.$slug);
