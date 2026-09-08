@@ -122,3 +122,8 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Khôi phục `Tiếp tục học` ở trang chi tiết cho tài khoản đã được cấp quyền, kể cả khi thiếu next lesson URL.
 - [x] Đổi CTA guest của khóa có yêu cầu liên hệ thành `Xem chi tiết` trên archive.
 - [x] Hiển thị giá `Liên hệ` cho khóa có `_lms_contact_course = 1` mà không thay đổi giá numeric của LearnPress.
+### Cập nhật performance local ngày 2026-09-08
+
+- [x] Đo request guest/admin cho archive, course detail, lesson detail và màn hình edit.
+- [x] Thêm request-level cache cho các lần kiểm tra enrollment lặp trong cùng request.
+- [ ] Tiếp tục theo dõi frontend bằng Chrome Network nếu production vẫn có request vượt 2 giây.

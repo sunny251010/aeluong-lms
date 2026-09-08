@@ -109,3 +109,7 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Guest thấy `Xem chi tiết` và có thể mở trang khóa; user đã đăng nhập nhưng chưa có quyền đi qua luồng liên hệ.
 - User đã có quyền luôn có `Tiếp tục học`; nếu chưa có lesson tiếp theo, hệ thống dùng permalink khóa học làm fallback.
 - `Liên hệ` chỉ là giá hiển thị. LearnPress vẫn lưu giá numeric/free gốc để giữ tương thích checkout và dữ liệu order về sau.
+## Performance và enrollment cache
+
+- Enrollment cache chỉ tồn tại trong vòng đời một PHP request, key theo `user_id:course_id`.
+- Cache không tạo bảng, không ghi option và không thay đổi trạng thái enrollment; request mới luôn đọc lại từ LearnPress.

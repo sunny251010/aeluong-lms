@@ -187,3 +187,8 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - LMS Site Core 0.13.0 luôn render CTA `Tiếp tục học` cho tài khoản đã có quyền, kể cả khi LearnPress chưa trả về lesson tiếp theo; URL fallback là trang course.
 - Guest trên course archive luôn thấy `Xem chi tiết`; chỉ user đã đăng nhập mới đi vào nhánh liên hệ/cấp quyền.
 - Course có meta `_lms_contact_course = 1` hiển thị giá `Liên hệ` ở archive và trang chi tiết. Giá số trong LearnPress vẫn giữ nguyên để không phá order/payment về sau.
+### Cập nhật performance local ngày 2026-09-08
+
+- LMS Site Core 0.14.0 cache kết quả `UserCourseModel::find()` theo cặp user/course trong phạm vi một request.
+- Mục tiêu là tránh việc archive, course detail và lesson detail lặp lại cùng một query enrollment khi nhiều hook LearnPress cùng kiểm tra quyền.
+- Không cache qua request và không thay đổi dữ liệu enrollment; LearnPress vẫn là source of truth.

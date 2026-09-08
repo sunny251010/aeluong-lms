@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.13.0
+ * Version: 0.14.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -459,7 +459,18 @@ function lms_site_core_get_user_course_enrollment( int $user_id, int $course_id 
 		return false;
 	}
 
-	return \LearnPress\Models\UserItems\UserCourseModel::find( $user_id, $course_id, false );
+	// Several access checks can happen while one course page is rendering.
+	// Reuse the result for this request instead of querying LearnPress repeatedly.
+	static $enrollment_cache = array();
+	$cache_key = $user_id . ':' . $course_id;
+
+	if ( array_key_exists( $cache_key, $enrollment_cache ) ) {
+		return $enrollment_cache[ $cache_key ];
+	}
+
+	$enrollment_cache[ $cache_key ] = \LearnPress\Models\UserItems\UserCourseModel::find( $user_id, $course_id, false );
+
+	return $enrollment_cache[ $cache_key ];
 }
 
 function lms_site_core_user_has_course_access_for_user( int $user_id, int $course_id ): bool {
