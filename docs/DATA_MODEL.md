@@ -102,3 +102,10 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Không tạo custom table; attachment vẫn do Media Library quản lý.
 
 - Trường zalo_phone lưu số hiển thị; URL Zalo được chuẩn hóa từ số này khi render.
+
+## Quy tắc hiển thị CTA và giá liên hệ
+
+- `_lms_contact_course = 1` là cờ nghiệp vụ cho khóa cần admin cấp quyền thủ công.
+- Guest thấy `Xem chi tiết` và có thể mở trang khóa; user đã đăng nhập nhưng chưa có quyền đi qua luồng liên hệ.
+- User đã có quyền luôn có `Tiếp tục học`; nếu chưa có lesson tiếp theo, hệ thống dùng permalink khóa học làm fallback.
+- `Liên hệ` chỉ là giá hiển thị. LearnPress vẫn lưu giá numeric/free gốc để giữ tương thích checkout và dữ liệu order về sau.

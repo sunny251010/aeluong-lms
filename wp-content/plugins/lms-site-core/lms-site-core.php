@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.12.0
+ * Version: 0.13.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -810,6 +810,14 @@ function lms_site_core_translate_frontend( string $translated, string $text, str
 		return $translated;
 	}
 
+	// Contact courses keep a numeric LearnPress price internally but show a clear public label.
+	if ( 'Free' === $text && 'learnpress' === $domain && function_exists( 'get_the_ID' ) ) {
+		$course_id = absint( get_the_ID() );
+
+		if ( $course_id > 0 && 'lp_course' === get_post_type( $course_id ) && lms_site_core_is_contact_course( $course_id ) ) {
+			return 'Liên hệ';
+		}
+	}
 	$translations = array(
 		'Buy Now'            => 'Xem chi tiết',
 		'Free'              => 'Miễn phí',
@@ -1184,6 +1192,25 @@ add_filter( 'rest_post_dispatch', 'lms_site_core_filter_course_rest_response', 2
 function lms_site_core_is_contact_course( int $course_id ): bool {
 	return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true );
 }
+/**
+ * Display a contact label for manually granted courses while keeping LearnPress price data intact.
+ */
+function lms_site_core_contact_course_price_html( $price_html, $course ) {
+	$course_id = lms_site_core_course_id( $course );
+
+	// LearnPress 4.4 passes its template object to this filter, so fall back to the current course post.
+	if ( $course_id <= 0 && function_exists( 'get_the_ID' ) ) {
+		$current_id = absint( get_the_ID() );
+		$course_id  = 'lp_course' === get_post_type( $current_id ) ? $current_id : 0;
+	}
+
+	if ( $course_id <= 0 || ! lms_site_core_is_contact_course( $course_id ) ) {
+		return $price_html;
+	}
+
+	return "<span class=\"free lms-site-core-contact-price\">Liên hệ</span>";
+}
+add_filter( 'learn_press_course_price_html_free', 'lms_site_core_contact_course_price_html', 20, 2 );
 
 /**
  * Add a small project-owned access flag to the LearnPress course editor.
@@ -1322,12 +1349,20 @@ function lms_site_core_course_archive_cta( array $sections, $course, $settings )
 
 	$has_access      = lms_site_core_user_has_course_access( $course_id );
 	$contact_required = lms_site_core_is_contact_course( $course_id );
+	if ( $contact_required && isset( $sections['price'] ) ) {
+		$sections['price'] = preg_replace(
+			'~<span class="free">.*?</span>~s',
+			'<span class="free lms-site-core-contact-price">Liên hệ</span>',
+			$sections['price'],
+			1
+		);
+	}
 	$label            = 'Xem chi tiết';
 	$attributes       = '';
 
 	if ( is_user_logged_in() && $has_access ) {
 		$label = 'Tiếp tục học';
-	} elseif ( $contact_required ) {
+	} elseif ( is_user_logged_in() && $contact_required ) {
 		$label      = 'Liên hệ để nhận khóa học';
 		$attributes = sprintf(
 			' data-lms-course-request="1" data-course-id="%d" data-lms-contact-only="1"',
@@ -1603,21 +1638,21 @@ function lms_site_core_course_detail_buttons( array $buttons, $course, $user ): 
 	$course_id = lms_site_core_course_id( $course );
 
 	if ( lms_site_core_user_has_course_access( $course_id ) ) {
-		$url = lms_site_core_course_continue_url( $course_id );
-		if ( $url !== (string) get_permalink( $course_id ) ) {
-			$enrollment = lms_site_core_get_user_course_enrollment( get_current_user_id(), $course_id );
-			$label = $enrollment && in_array( $enrollment->get_status(), array( 'finished', 'completed' ), true ) ? 'Ôn lại bài học' : 'Tiếp tục học';
-			// Replace only the native continue action; retain Finish/Retake controls.
-			foreach ( array( 'btn_continue_and_finish', 'btn_learning' ) as $key ) {
-				if ( isset( $buttons[ $key ] ) ) {
-					$buttons[ $key ] = preg_replace( '~<a\b[^>]*>\s*<button\b[^>]*class=["\'][^"\']*course-btn-continue[^"\']*["\'][^>]*>.*?</button>\s*</a>~s', '', $buttons[ $key ] );
-				}
+		$url        = lms_site_core_course_continue_url( $course_id );
+		$enrollment = lms_site_core_get_user_course_enrollment( get_current_user_id(), $course_id );
+		$label      = $enrollment && in_array( $enrollment->get_status(), array( 'finished', 'completed' ), true ) ? 'Ôn lại bài học' : 'Tiếp tục học';
+
+		// Always provide an access link, including when no next lesson URL exists yet.
+		foreach ( array( 'btn_continue_and_finish', 'btn_learning' ) as $key ) {
+			if ( isset( $buttons[ $key ] ) ) {
+				$buttons[ $key ] = preg_replace( '~<a\b[^>]*>\s*<button\b[^>]*class=["\'][^"\']*course-btn-continue[^"\']*["\'][^>]*>.*?</button>\s*</a>~s', '', $buttons[ $key ] );
 			}
-			$link = sprintf( '<a class="lp-button button lms-course-resume" href="%s">%s</a>', esc_url( $url ), esc_html( $label ) );
-			$buttons['btn_buy'] = $link;
-			$buttons['btn_enroll'] = '';
-			$buttons['btn_contact'] = '';
 		}
+
+		$buttons['btn_buy']    = sprintf( '<a class="lp-button button lms-course-resume" href="%s">%s</a>', esc_url( $url ), esc_html( $label ) );
+		$buttons['btn_enroll'] = '';
+		$buttons['btn_contact'] = '';
+
 		return $buttons;
 	}
 
