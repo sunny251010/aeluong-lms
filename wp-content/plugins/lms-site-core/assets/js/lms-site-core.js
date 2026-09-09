@@ -39,12 +39,18 @@ function lmsSiteCoreInit() {
 		}
 	}
 
-	function showLogin(courseId) {
+	function showLogin(courseId, courseUrl) {
 		var normalizedCourseId = parseInt(courseId, 10);
 		if (normalizedCourseId > 0) {
 			window.sessionStorage.setItem('lmsPendingCourseId', String(normalizedCourseId));
+		} else {
+			window.sessionStorage.removeItem('lmsPendingCourseId');
 		}
-
+		if (courseUrl) {
+			window.sessionStorage.setItem('lmsPendingCourseUrl', courseUrl);
+		} else {
+			window.sessionStorage.removeItem('lmsPendingCourseUrl');
+		}
 		if (loginMessage) {
 			loginMessage.hidden = true;
 			loginMessage.textContent = '';
@@ -114,12 +120,13 @@ function lmsSiteCoreInit() {
 		if (courseRequest) {
 			event.preventDefault();
 			var courseId = courseRequest.getAttribute('data-course-id') || state.currentCourseId || 0;
+			var courseUrl = courseRequest.getAttribute('data-course-url') || '';
 			var contactOnly = courseRequest.getAttribute('data-lms-contact-only') === '1';
 
 			if (contactOnly || state.isLoggedIn) {
 				showAccess(contactOnly);
 			} else {
-				showLogin(courseId);
+				showLogin(courseId, courseUrl);
 			}
 			return;
 		}
@@ -211,6 +218,13 @@ function lmsSiteCoreInit() {
 		});
 	}
 
+	var pendingCourseId = window.sessionStorage.getItem('lmsPendingCourseId');
+	var pendingCourseUrl = window.sessionStorage.getItem('lmsPendingCourseUrl');
+
+	if (state.isLoggedIn && !state.currentCourseId && pendingCourseId && pendingCourseUrl) {
+		window.location.assign(pendingCourseUrl);
+		return;
+	}
 	var defaultGridAttempts = 0;
 
 	function setDefaultCourseGrid() {
@@ -234,11 +248,13 @@ function lmsSiteCoreInit() {
 	if (
 		state.isLoggedIn &&
 		state.currentCourseId &&
-		!state.currentCourseAccess &&
-		window.sessionStorage.getItem('lmsPendingCourseId') === String(state.currentCourseId)
+		pendingCourseId === String(state.currentCourseId)
 	) {
 		window.sessionStorage.removeItem('lmsPendingCourseId');
-		showAccess(false);
+		window.sessionStorage.removeItem('lmsPendingCourseUrl');
+		if (!state.currentCourseAccess) {
+			showAccess(Boolean(state.currentCourseContactOnly));
+		}
 	}
 }
 

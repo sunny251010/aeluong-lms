@@ -198,3 +198,15 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - LMS Site Core 0.14.0 cache kết quả `UserCourseModel::find()` theo cặp user/course trong phạm vi một request.
 - Mục tiêu là tránh việc archive, course detail và lesson detail lặp lại cùng một query enrollment khi nhiều hook LearnPress cùng kiểm tra quyền.
 - Không cache qua request và không thay đổi dữ liệu enrollment; LearnPress vẫn là source of truth.
+### Cập nhật luồng archive và quyền học — 2026-09-10
+
+- Card archive của LearnPress tiếp tục dùng permalink native: click ảnh/tên/card sẽ mở trực tiếp trang course.
+- CTA Xem chi tiết của guest không đi thẳng vào course bằng click CTA; nó mở login modal và lưu course ID cùng URL trong sessionStorage.
+- Sau khi đăng nhập username/password hoặc quay lại từ Google OAuth, trang archive chuyển người dùng về đúng course vừa chọn. Nếu user chưa có enrollment, access modal hiện nút đóng và nút liên hệ Zalo; nếu đã có quyền, course detail hiển thị Tiếp tục học.
+- Course contact-only được truyền vào frontend state để modal hiển thị đúng nội dung liên hệ sau OAuth. Không tạo route hoặc bảng dữ liệu mới.
+
+### Cập nhật điều hướng card khóa học — 2026-09-10
+
+- User đã đăng nhập và có quyền học: ảnh, tiêu đề và CTA của card dùng cùng URL bài học tiếp theo; nếu chưa có enrollment row riêng nhưng là admin thì dùng bài đầu tiên trong curriculum.
+- Guest hoặc user chưa có quyền vẫn giữ course overview để đi qua login/access modal.
+- Không tạo route hoặc bảng dữ liệu mới; LearnPress vẫn là source of truth cho curriculum và enrollment.

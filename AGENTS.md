@@ -1,4 +1,5 @@
 Trước khi code:
+- Luôn luôn tư duy là khi làm bất cứ thứ gì, làm xong hãy đóng vai người thật để test nhé.
 - Đọc docs/ARCHITECTURE.md
 - Đọc docs/DATA_MODEL.md
 - Đọc phase hiện tại trong docs/ROADMAP.md

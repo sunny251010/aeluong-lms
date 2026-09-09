@@ -129,3 +129,17 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Đo request guest/admin cho archive, course detail, lesson detail và màn hình edit.
 - [x] Thêm request-level cache cho các lần kiểm tra enrollment lặp trong cùng request.
 - [ ] Tiếp tục theo dõi frontend bằng Chrome Network nếu production vẫn có request vượt 2 giây.
+### Cập nhật archive/login/access — 2026-09-10
+
+- [x] Giữ click ảnh/tên/card mở trực tiếp course permalink native của LearnPress.
+- [x] Đổi CTA guest Xem chi tiết thành access trigger mở login modal thay vì đi thẳng tới checkout/course.
+- [x] Giữ course ID và URL pending qua login thường và Google OAuth; sau khi xác thực quay lại đúng course.
+- [x] User đã đăng nhập nhưng chưa được cấp quyền nhận access modal có nút đóng và liên hệ Zalo; user có quyền giữ Tiếp tục học.
+- [ ] Smoke test trực quan bằng trình duyệt thật sau khi deploy production; browser automation local hiện chưa khởi tạo được.
+
+### Cập nhật card vào thẳng bài học — 2026-09-10
+
+- [x] Card course đã đồng bộ đích đến cho ảnh, tiêu đề và CTA.
+- [x] User có quyền học đi thẳng tới bài đầu tiên hoặc bài chưa hoàn thành tiếp theo.
+- [x] Guest/user chưa có quyền vẫn giữ luồng overview, login và liên hệ Zalo.
+- [ ] Smoke test trực quan lại trên local và production sau deploy.

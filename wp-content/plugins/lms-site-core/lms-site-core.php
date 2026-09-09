@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.15.0
+ * Version: 0.17.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1331,6 +1331,9 @@ add_filter( 'learn-press/user/can-enroll-course', 'lms_site_core_filter_legacy_c
 
 /**
  * Resume using the next curriculum item selected by LearnPress progress.
+ *
+ * Administrators may have access without a user-course enrollment row, so
+ * their first curriculum item is used when LearnPress has no resume item.
  */
 function lms_site_core_course_continue_url( int $course_id ): string {
 	$fallback = (string) get_permalink( $course_id );
@@ -1339,14 +1342,98 @@ function lms_site_core_course_continue_url( int $course_id ): string {
 	}
 
 	$enrollment = lms_site_core_get_user_course_enrollment( get_current_user_id(), $course_id );
-	if ( ! $enrollment || ! method_exists( $enrollment, 'get_item_continue' ) ) {
-		return $fallback;
+	$course     = $enrollment && method_exists( $enrollment, 'get_course_model' )
+		? $enrollment->get_course_model()
+		: ( class_exists( '\LearnPress\Models\CourseModel' )
+			? \LearnPress\Models\CourseModel::find( $course_id, true )
+			: false );
+
+	if ( $enrollment && method_exists( $enrollment, 'get_item_continue' ) ) {
+		$item = $enrollment->get_item_continue();
+		if ( $course && $item ) {
+			return $course->get_item_link( (int) $item->ID );
+		}
 	}
 
-	$course = $enrollment->get_course_model();
-	$item   = $enrollment->get_item_continue();
-	return $course && $item ? $course->get_item_link( (int) $item->ID ) : $fallback;
+	if ( $course && method_exists( $course, 'get_section_items' ) ) {
+		foreach ( $course->get_section_items() as $section_items ) {
+			foreach ( $section_items->items ?? array() as $item ) {
+				$item_id   = (int) ( $item->id ?? $item->item_id ?? 0 );
+				$item_type = (string) ( $item->type ?? $item->item_type ?? '' );
+
+				if ( $item_id > 0 ) {
+					return $course->get_item_link( $item_id, $item_type );
+				}
+			}
+		}
+	}
+
+	return $fallback;
 }
+
+/**
+ * Send enrolled users from archive card links to their next LearnPress item.
+ * Guests and users without access keep the public course overview link.
+ */
+function lms_site_core_course_archive_destination( $course ): string {
+	$course_id = lms_site_core_course_id( $course );
+
+	if ( $course_id > 0 && lms_site_core_user_has_course_access( $course_id ) ) {
+		return lms_site_core_course_continue_url( $course_id );
+	}
+
+	return is_object( $course ) && method_exists( $course, 'get_permalink' )
+		? (string) $course->get_permalink()
+		: '';
+}
+
+/**
+ * Point the archive thumbnail at the next lesson for users with course access.
+ */
+function lms_site_core_course_archive_section_top( array $section_top, $course, $settings ): array {
+	if ( empty( $section_top['img'] ) ) {
+		return $section_top;
+	}
+
+	$destination = lms_site_core_course_archive_destination( $course );
+	if ( '' === $destination ) {
+		return $section_top;
+	}
+
+	$section_top['img'] = preg_replace(
+		'~<a href="[^"]*">~',
+		'<a href="' . esc_url( $destination ) . '">',
+		$section_top['img'],
+		1
+	);
+
+	return $section_top;
+}
+add_filter( 'learn-press/layout/list-courses/item/section-top', 'lms_site_core_course_archive_section_top', 30, 3 );
+
+/**
+ * Point the archive course title at the next lesson for users with course access.
+ */
+function lms_site_core_course_archive_section_bottom( array $section_bottom, $course, $settings ): array {
+	if ( empty( $section_bottom['title'] ) ) {
+		return $section_bottom;
+	}
+
+	$destination = lms_site_core_course_archive_destination( $course );
+	if ( '' === $destination ) {
+		return $section_bottom;
+	}
+
+	$section_bottom['title'] = preg_replace(
+		'~<a class="course-permalink" href="[^"]*">~',
+		'<a class="course-permalink" href="' . esc_url( $destination ) . '">',
+		$section_bottom['title'],
+		1
+	);
+
+	return $section_bottom;
+}
+add_filter( 'learn-press/layout/list-courses/item/section/bottom', 'lms_site_core_course_archive_section_bottom', 30, 3 );
 
 /**
  * Render archive actions according to login and enrollment state.
@@ -1358,7 +1445,7 @@ function lms_site_core_course_archive_cta( array $sections, $course, $settings )
 		return $sections;
 	}
 
-	$has_access      = lms_site_core_user_has_course_access( $course_id );
+	$has_access       = lms_site_core_user_has_course_access( $course_id );
 	$contact_required = lms_site_core_is_contact_course( $course_id );
 	if ( $contact_required && isset( $sections['price'] ) ) {
 		$sections['price'] = preg_replace(
@@ -1368,22 +1455,28 @@ function lms_site_core_course_archive_cta( array $sections, $course, $settings )
 			1
 		);
 	}
-	$label            = 'Xem chi tiết';
-	$attributes       = '';
+
+	$label      = 'Xem chi tiết';
+	$attributes = '';
 
 	if ( is_user_logged_in() && $has_access ) {
 		$label = 'Tiếp tục học';
 	} elseif ( is_user_logged_in() && $contact_required ) {
 		$label      = 'Liên hệ để nhận khóa học';
 		$attributes = sprintf(
-			' data-lms-course-request="1" data-course-id="%d" data-lms-contact-only="1"',
-			$course_id
+			' data-lms-course-request="1" data-course-id="%d" data-lms-contact-only="1" data-course-url="%s"',
+			$course_id,
+			esc_url( $course->get_permalink() )
 		);
-	} elseif ( is_user_logged_in() ) {
-		$label      = 'Liên hệ để học';
+	} else {
+		if ( is_user_logged_in() ) {
+			$label = 'Liên hệ để học';
+		}
+
 		$attributes = sprintf(
-			' data-lms-course-request="1" data-course-id="%d"',
-			$course_id
+			' data-lms-course-request="1" data-course-id="%d" data-course-url="%s"',
+			$course_id,
+			esc_url( $course->get_permalink() )
 		);
 	}
 
@@ -1431,7 +1524,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.10.0',
+		'0.10.1',
 		true
 	);
 
@@ -1445,6 +1538,9 @@ function lms_site_core_enqueue_frontend_assets(): void {
 			'currentCourseId'     => $current_course_id,
 			'currentCourseAccess' => $current_course_id > 0
 				? lms_site_core_user_has_course_access( $current_course_id )
+				: false,
+			'currentCourseContactOnly' => $current_course_id > 0
+				? lms_site_core_is_contact_course( $current_course_id )
 				: false,
 			'zaloUrl'             => lms_site_core_zalo_url(),
 			'loginError'          => 'Thông tin đăng nhập chưa đúng.',

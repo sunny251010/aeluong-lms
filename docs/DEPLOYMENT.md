@@ -181,3 +181,17 @@ Lượt này chỉ thay đổi local, chưa deploy. Khi chuyển hosting, dùng 
 ### Cấu hình paste Lesson
 
 Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includes/lesson-authoring.php, giữ plugin active. Trong LearnPress Settings → Advanced → Enable gutenberg, bật Lesson nếu chưa bật. Reload editor rồi thử Classic → Edit contents → paste đoạn có màu/cỡ chữ → Save draft → reload → Preview. Không cần cài Classic Editor plugin hay migration DB. Không deploy bản nháp test ID 59. Production chưa thay đổi.
+
+### Smoke test archive và Google access — 2026-09-10
+
+- Ở chế độ logged out, mở /courses/: click ảnh/tên/card phải mở trang course; click CTA Xem chi tiết phải mở login modal.
+- Đăng nhập bằng username/password từ CTA: phải quay lại đúng course vừa chọn.
+- Đăng nhập bằng Google từ CTA: sau callback phải quay lại đúng course; nếu chưa được cấp quyền, access modal hiển thị nút đóng và nút Liên hệ qua Zalo, không mở checkout.
+- Với tài khoản đã được admin enroll, CTA/course detail phải hiển thị Tiếp tục học.
+- Sau deploy, xóa cache plugin/CDN nếu có rồi kiểm tra lại cả guest, Google user chưa có quyền và student đã được cấp quyền.
+
+### Smoke test card course — 2026-09-10
+
+- Với tài khoản đã được cấp quyền, mở /courses/, click ảnh, tiêu đề và nút Tiep tuc hoc của khóa nâng cao; cả ba phải mở URL /lessons/.../, không dừng ở course overview.
+- Với guest hoặc tài khoản chưa có quyền, click card vẫn mở overview; CTA tiếp tục đi qua login/access modal theo thiết kế.
+- Sau deploy phải purge cache rồi kiểm tra lại cả ba loại tài khoản.
