@@ -150,6 +150,13 @@ Sau khi deploy plugin, kiểm tra trên production:
 Form chỉ gửi email, không tạo bảng dữ liệu riêng. Không đưa email, mật khẩu hoặc nội dung góp ý thật vào Git.
 
 
+### Google Login qua Nextend Social Login
+
+- Nextend Social Login là plugin third-party nên không đi qua workflow Git deploy hiện tại; cần cài và active thủ công trên production.
+- Vào Settings > Nextend Social Login, mở Google provider, dán Client ID/Client Secret và bấm Verify/Enable.
+- Authorized redirect URI phải lấy đúng URL Nextend hiển thị trong phần Google provider; local và production dùng URI khác nhau.
+- Sau khi provider enabled, mở login modal ở chế độ logged out và xác nhận nút Google xuất hiện. Bấm thử bằng tài khoản Google test rồi kiểm tra user được tạo/đăng nhập đúng.
+- Nếu nút không xuất hiện, kiểm tra plugin active, Google provider đã enabled và cache đã được xóa.
 ### Cấu hình hai menu trên production
 
 - Primary: chỉ gán menu có Courses và Contact.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.14.0
+ * Version: 0.15.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1549,12 +1549,27 @@ function lms_site_core_secondary_menu_item_title( string $title, $item, $args, i
 add_filter( 'nav_menu_item_title', 'lms_site_core_secondary_menu_item_title', 20, 4 );
 
 /**
+ * Return the Google button rendered by Nextend Social Login when Google is enabled.
+ */
+function lms_site_core_get_nextend_google_login_markup(): string {
+	if ( ! shortcode_exists( 'nextend_social_login' ) ) {
+		return '';
+	}
+
+	$markup = do_shortcode( '[nextend_social_login provider="google" style="fullwidth" align="center" login="1"]' );
+
+	return is_string( $markup ) ? trim( $markup ) : '';
+}
+
+/**
  * Render the login and access dialogs once per frontend page.
  */
 function lms_site_core_render_frontend_dialogs(): void {
 	if ( is_admin() && ! wp_doing_ajax() ) {
 		return;
 	}
+
+	$google_login_markup = lms_site_core_get_nextend_google_login_markup();
 	?>
 	<div id="lms-login-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-login-title" hidden>
 		<div class="lms-site-core-modal-panel">
@@ -1570,7 +1585,10 @@ function lms_site_core_render_frontend_dialogs(): void {
 				<p class="lms-site-core-modal-message" data-lms-login-message role="alert" hidden></p>
 				<button type="submit" class="lms-site-core-modal-submit">Đăng nhập</button>
 			</form>
-			<p class="lms-site-core-modal-note">Google Login sẽ được bổ sung sau.</p>
+			<?php if ( '' !== $google_login_markup ) : ?>
+				<div class="lms-site-core-login-divider"><span>hoặc</span></div>
+				<div class="lms-site-core-google-login"><?php echo $google_login_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted Nextend shortcode output. ?></div>
+			<?php endif; ?>
 		</div>
 	</div>
 	<div id="lms-access-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-access-title" hidden>

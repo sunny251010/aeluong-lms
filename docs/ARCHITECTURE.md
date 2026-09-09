@@ -80,7 +80,7 @@ Khi user click CTA course:
 - Đã đăng nhập nhưng chưa có quyền: mở modal thông báo và nút liên hệ Zalo.
 - Header hiển thị Login khi guest và avatar khi đã đăng nhập.
 
-Google OAuth không tự implement từ đầu. Nếu cần Google login, cấu hình qua plugin OAuth phù hợp trong WordPress Admin.
+Google OAuth không tự implement trong LMS Site Core; dùng Nextend Social Login để xử lý provider, callback và account linking. LMS Site Core chỉ render shortcode Google vào login modal.
 
 ## Zalo
 
@@ -114,7 +114,7 @@ Sau này admin sẽ chuyển nhiều nội dung từ Google Sites sang WordPress
 
 - Header giữ logo/site title trong cùng container với navigation để các action nằm cân theo trục nội dung.
 - Action Support mở modal thông tin chuyển khoản; ảnh ngân hàng hiện là placeholder nội bộ và phải được thay trước khi nhận ủng hộ thật.
-- Login modal dùng chung cho action header và CTA khóa học; Google OAuth vẫn để phase sau.
+- Login modal dùng chung cho action header và CTA khóa học; nếu Nextend Google provider đã enabled, modal hiển thị thêm nút Google.
 - Khóa có meta _lms_contact_course = 1 sẽ mở modal liên hệ Zalo để admin cấp quyền, không đi qua checkout hoặc tự enroll.
 
 - Plugin cung cấp checkbox Contact admin before enrollment cho các course cần admin cấp quyền trước khi học.
@@ -181,6 +181,12 @@ Chrome đã kết nối và kiểm tra bảng IPA private. Lesson Classic dùng 
 Donation modal đọc cấu hình từ option lms_site_core_donation_settings. Admin có thể thay tiêu đề, mô tả, thông báo ngân hàng, tên ngân hàng, số tài khoản, chủ tài khoản và ảnh QR trong Settings > LMS Site Core. Ảnh QR dùng Media Library; nếu chưa chọn ảnh riêng, plugin dùng placeholder nội bộ.
 
 - Sticky Zalo dùng chung option zalo_phone trong lms_site_core_donation_settings; Contact, access modal, frontend localized URL và sticky đều lấy từ helper này.
+
+### Google Login qua Nextend
+
+- Nextend Social Login là plugin bên thứ ba, được cài và active riêng trên local/production; không commit source plugin vào Git.
+- LMS Site Core kiểm tra shortcode nextend_social_login và chỉ render provider google khi Nextend đã cấu hình/enabled provider.
+- OAuth credential, redirect URI, state và account linking do Nextend quản lý; LMS Site Core không lưu Client ID/Client Secret.
 
 ### Cập nhật CTA và giá liên hệ local ngày 2026-09-08
 

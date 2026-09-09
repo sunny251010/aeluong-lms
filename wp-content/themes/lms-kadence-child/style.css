@@ -3,7 +3,7 @@ Theme Name: LMS Kadence Child
 Description: Project-owned child theme for the Kadence parent theme.
 Author: LMS Project
 Template: kadence
-Version: 0.6.3
+Version: 0.6.4
 Text Domain: lms-kadence-child
 */
 
@@ -361,6 +361,35 @@ body.lms-site-core-modal-open {
   padding: 8px 10px;
   background: #fff1f1;
   color: #9b1c1c;
+}
+
+.lms-site-core-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 14px;
+  color: #6b7788;
+  font-size: 0.9rem;
+}
+
+.lms-site-core-login-divider::before,
+.lms-site-core-login-divider::after {
+  flex: 1;
+  height: 1px;
+  background: #dfe5ec;
+  content: "";
+}
+
+.lms-site-core-google-login {
+  margin-top: 0;
+}
+
+.lms-site-core-google-login .nsl-container {
+  margin: 0;
+}
+
+.lms-site-core-google-login .nsl-container-block-fullwidth {
+  width: 100%;
 }
 
 .lms-site-core-modal-note {

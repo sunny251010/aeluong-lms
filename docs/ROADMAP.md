@@ -27,7 +27,7 @@ Trạng thái:
 - Đã tạo child theme lms-kadence-child và active trên local; production cần active sau khi deploy.
 - Đã tạo và active custom plugin lms-site-core trên local; production cần active sau khi deploy. Plugin đã ẩn các mục quản trị nâng cao không cần thiết của LearnPress trong wp-admin, giữ lại Settings để cấu hình, ẩn các page phụ khỏi danh sách Pages và ẩn chúng khỏi frontend navigation.
 - Đã bổ sung giao diện course archive dạng card grid trong child theme: 3 cột desktop, 2 cột tablet và 1 cột mobile.
-- Đã bổ sung frontend Vietnamese, login modal bằng WordPress account, avatar account menu, CTA theo enrollment và Zalo access modal; Google OAuth để phase sau.
+- Đã bổ sung frontend Vietnamese, login modal bằng WordPress account, avatar account menu, CTA theo enrollment và Zalo access modal; login modal đã có bridge render Google từ Nextend Social Login.
 
 
 - Đã bổ sung action Support cạnh account menu, modal ngân hàng placeholder và modal access riêng cho khóa miễn phí cần liên hệ admin.
@@ -116,6 +116,8 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Donation modal có thể cấu hình trong WP-Admin, bao gồm nội dung ngân hàng và ảnh QR từ Media Library.
 
 - [x] Thêm sticky Zalo và cấu hình một số Zalo dùng chung trong WP-Admin.
+- [x] Tích hợp nút Google của Nextend Social Login vào login modal; không tự triển khai OAuth trong LMS Site Core.
+- [ ] Kiểm thử end-to-end Google Login bằng tài khoản thật trên local và production.
 
 ### Cập nhật CTA và giá liên hệ ngày 2026-09-08
 
