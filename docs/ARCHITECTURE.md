@@ -210,3 +210,10 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - User đã đăng nhập và có quyền học: ảnh, tiêu đề và CTA của card dùng cùng URL bài học tiếp theo; nếu chưa có enrollment row riêng nhưng là admin thì dùng bài đầu tiên trong curriculum.
 - Guest hoặc user chưa có quyền vẫn giữ course overview để đi qua login/access modal.
 - Không tạo route hoặc bảng dữ liệu mới; LearnPress vẫn là source of truth cho curriculum và enrollment.
+
+### Cập nhật admin bar, logout và footer — 2026-09-10
+
+- WordPress Admin Bar chỉ hiển thị với user có capability manage_options; Student và tài khoản Google vẫn dùng frontend bình thường nhưng không thấy thanh quản trị.
+- Logout redirect về course archive native của LearnPress.
+- Footer credit được thay trong child theme; Kadence parent không bị sửa. Link Bang Nguyen trỏ tới Facebook cá nhân đã cấu hình.
+- Hướng Google pre-approval: admin quản lý allowlist email exact theo course; sau hook login/register của Google, LMS Site Core tạo enrollment LearnPress idempotent. Cần chốt UI và danh sách email/course trước khi triển khai.

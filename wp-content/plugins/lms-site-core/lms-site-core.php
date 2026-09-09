@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.17.0
+ * Version: 0.18.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1806,3 +1806,21 @@ function lms_site_core_course_detail_buttons( array $buttons, $course, $user ): 
 add_filter( 'learn-press/single-course/modern/section-right/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );
 add_filter( 'learn-press/single-course/model/section-right/info-meta/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );
 add_filter( 'learn-press/single-course/offline/section-right/info-meta/buttons', 'lms_site_core_course_detail_buttons', 20, 3 );
+
+/**
+ * Keep the WordPress Admin Bar available to administrators only.
+ */
+function lms_site_core_show_admin_bar_for_admins( bool $show ): bool {
+	return current_user_can( 'manage_options' ) ? $show : false;
+}
+add_filter( 'show_admin_bar', 'lms_site_core_show_admin_bar_for_admins', 20 );
+
+/**
+ * Return every logged-out user to the course archive.
+ */
+function lms_site_core_logout_redirect_to_courses( string $redirect_to, string $requested_redirect_to, $user ): string {
+	$courses_url = get_post_type_archive_link( 'lp_course' );
+
+	return $courses_url ?: home_url( '/' );
+}
+add_filter( 'logout_redirect', 'lms_site_core_logout_redirect_to_courses', 20, 3 );

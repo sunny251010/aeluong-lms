@@ -195,3 +195,11 @@ Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includ
 - Với tài khoản đã được cấp quyền, mở /courses/, click ảnh, tiêu đề và nút Tiep tuc hoc của khóa nâng cao; cả ba phải mở URL /lessons/.../, không dừng ở course overview.
 - Với guest hoặc tài khoản chưa có quyền, click card vẫn mở overview; CTA tiếp tục đi qua login/access modal theo thiết kế.
 - Sau deploy phải purge cache rồi kiểm tra lại cả ba loại tài khoản.
+
+### Smoke test account và footer — 2026-09-10
+
+- Guest và Student/Google user: không được thấy WordPress Admin Bar.
+- Admin: vẫn thấy Admin Bar và truy cập wp-admin bình thường.
+- Logout từ profile/account: phải quay về /courses/.
+- Footer phải hiển thị website by Bang Nguyen; click Bang Nguyen mở Facebook đúng URL.
+- Google pre-approval sẽ cần cấu hình riêng trên production sau khi tính năng allowlist được triển khai.

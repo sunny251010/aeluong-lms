@@ -143,3 +143,10 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] User có quyền học đi thẳng tới bài đầu tiên hoặc bài chưa hoàn thành tiếp theo.
 - [x] Guest/user chưa có quyền vẫn giữ luồng overview, login và liên hệ Zalo.
 - [ ] Smoke test trực quan lại trên local và production sau deploy.
+
+### Cập nhật account và footer — 2026-09-10
+
+- [x] Ẩn WordPress Admin Bar với tài khoản không có quyền quản trị.
+- [x] Logout quay về trang Courses.
+- [x] Đổi footer credit sang website by Bang Nguyen và liên kết Facebook.
+- [ ] Xây Google pre-approval allowlist theo email và course sau khi chốt danh sách được cấp quyền.
