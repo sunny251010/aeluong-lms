@@ -210,3 +210,10 @@ Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includ
 - Cùng phiên đó mở lesson của course miễn phí: HTTP 200, không còn marker This content is protected và nội dung lesson được render.
 - Root cause của lỗi cũ là EnrollmentTools::enroll_student() yêu cầu quyền quản trị; bản sửa chuyển sang native LearnPress user-item API.
 - Sau deploy production, kiểm tra lại bằng một Gmail trong allowlist, một Gmail ngoài allowlist và một Gmail đăng nhập course miễn phí.
+
+### Smoke test Google access admin table — 2026-09-10
+- Vào Settings > Google access và xác nhận bảng Gmail hiển thị đúng.
+- Dùng ô tìm kiếm để lọc Gmail hoặc username; bảo đảm chỉ ẩn dòng trên giao diện, không làm mất dòng khác khi lưu.
+- Chọn/bỏ chọn course trả phí trên một dòng rồi lưu; tải lại để xác nhận lựa chọn được giữ.
+- Kiểm tra Gmail đã có account có display name/username và liên kết mở Students & enrollment.
+- Course miễn phí phải hiện Tự động, không cần tick cấp quyền.

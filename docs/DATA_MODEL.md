@@ -126,3 +126,8 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Enrollment Google/free được ghi vào user-item table native của LearnPress bằng learn_press_update_user_item_field().
 - Revoke đổi status sang cancel, giữ nguyên progress và metadata; cấp lại sẽ reactivate dòng cũ.
 - Request cache chỉ tồn tại trong PHP request, không phải dữ liệu DB.
+
+## Admin UI: Google access table — 2026-09-10
+- Không thay đổi schema hoặc option shape. Option lms_site_core_google_allowlist vẫn lưu mảng email và course_ids.
+- Bảng quản trị chỉ là lớp hiển thị/chỉnh sửa option hiện có.
+- Tài khoản WordPress được tra cứu theo email bằng API native get_user_by(); không tạo user hoặc bảng mới.

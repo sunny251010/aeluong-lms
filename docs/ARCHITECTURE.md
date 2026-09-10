@@ -232,3 +232,10 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - LMS Site Core dùng các helper native learn_press_get_user_item() và learn_press_update_user_item_field() để đọc, tạo, reactivate và revoke user-course enrollment của LearnPress.
 - Sau khi ghi enrollment, request cache được xóa để trạng thái enrolled/cancel phản ánh ngay trong cùng request.
 - Filter learnpress/course/can-view-content đồng bộ policy access của LMS Site Core với lesson gate của LearnPress: user đăng nhập có quyền allowlist hoặc course miễn phí được xem nội dung lesson.
+
+### Cập nhật giao diện Google access — 2026-09-10
+- Trang Settings > Google access hiển thị allowlist dạng bảng để admin tìm theo Gmail, tên hoặc username.
+- Mỗi dòng cho phép chỉnh email, chọn trực tiếp các course trả phí và xóa dòng khỏi allowlist trước khi lưu.
+- Nếu Gmail đã có WordPress account, bảng hiển thị display name/username và liên kết mở Students & enrollment.
+- Course miễn phí hiển thị Tự động và không cần cấp thủ công.
+- Allowlist chỉ quyết định việc tự cấp ở lần Google login; enrollment LearnPress đã tồn tại vẫn phải thu hồi tại Students & enrollment.

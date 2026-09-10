@@ -167,3 +167,10 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] User đã đăng nhập được xem lesson của course miễn phí qua LearnPress content gate.
 - [x] Xóa cache enrollment sau grant/revoke để trạng thái cập nhật ngay trong request.
 - [ ] Chạy lại smoke test tương đương trên production sau deploy; allowlist và dữ liệu enrollment phải cấu hình riêng trên production.
+
+### Cập nhật quản lý Google allowlist — 2026-09-10
+- [x] Hiển thị allowlist Gmail dạng bảng có tìm kiếm theo email, tên và username.
+- [x] Chọn course trực tiếp trên từng dòng Gmail.
+- [x] Hiển thị trạng thái tài khoản và liên kết sang Students & enrollment khi phù hợp.
+- [x] Đánh dấu course miễn phí là quyền tự động, không cấp thủ công.
+- [ ] Kiểm tra lại giao diện bảng trên production sau khi upload plugin.

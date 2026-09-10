@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.19.1
+ * Version: 0.20.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -490,30 +490,216 @@ function lms_site_core_add_google_allowlist_settings_page(): void {
 add_action( 'admin_menu', 'lms_site_core_add_google_allowlist_settings_page', 42 );
 
 function lms_site_core_render_google_allowlist_settings_page(): void {
-    if ( ! current_user_can( 'manage_options' ) ) { return; }
-    $rows = lms_site_core_get_google_allowlist();
-    $courses = get_posts( array( 'post_type' => 'lp_course', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
-    if ( empty( $rows ) ) { $rows = array( array( 'email' => '', 'course_ids' => array() ) ); }
-    ?>
-    <div class='wrap'><h1>Google access pre-approval</h1>
-    <p>Nhập đúng email Google và chọn các khóa học được cấp tự động sau khi đăng nhập. Email ngoài danh sách sẽ không được cấp khóa trả phí.</p>
-    <form method='post' action='options.php'><?php settings_fields( 'lms_site_core_google_allowlist' ); ?>
-    <div id='lms-site-core-google-allowlist'>
-    <?php foreach ( $rows as $index => $row ) : $selected = array_map( 'absint', (array) ( $row['course_ids'] ?? array() ) ); ?>
-        <div class='lms-site-core-google-row' style='border:1px solid #ccd0d4;padding:16px;margin:0 0 12px;max-width:1000px;background:#fff;'>
-        <p><label><strong>Email Google</strong></label><br><input class='regular-text' type='email' name='lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][email]' value='<?php echo esc_attr( $row['email'] ?? '' ); ?>' placeholder='student@gmail.com'></p>
-        <fieldset><legend><strong>Khóa học được cấp</strong></legend><?php foreach ( $courses as $course ) : ?>
-            <label style='display:inline-block;min-width:280px;margin:6px 18px 6px 0;'><input type='checkbox' name='lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][course_ids][]' value='<?php echo esc_attr( $course->ID ); ?>' <?php checked( in_array( (int) $course->ID, $selected, true ) ); ?>> <?php echo esc_html( $course->post_title ); ?></label>
-        <?php endforeach; ?></fieldset>
-        <button type='button' class='button lms-site-core-google-remove'>Xóa dòng</button></div>
-    <?php endforeach; ?></div>
-    <p><button type='button' class='button' id='lms-site-core-google-add'>Thêm email</button></p>
-    <script type='text/template' id='lms-site-core-google-template'><div class='lms-site-core-google-row' style='border:1px solid #ccd0d4;padding:16px;margin:0 0 12px;max-width:1000px;background:#fff;'><p><label><strong>Email Google</strong></label><br><input class='regular-text' type='email' name='lms_site_core_google_allowlist[__INDEX__][email]' placeholder='student@gmail.com'></p><fieldset><legend><strong>Khóa học được cấp</strong></legend><?php foreach ( $courses as $course ) : ?><label style='display:inline-block;min-width:280px;margin:6px 18px 6px 0;'><input type='checkbox' name='lms_site_core_google_allowlist[__INDEX__][course_ids][]' value='<?php echo esc_attr( $course->ID ); ?>'> <?php echo esc_html( $course->post_title ); ?></label><?php endforeach; ?></fieldset><button type='button' class='button lms-site-core-google-remove'>Xóa dòng</button></div></script>
-    <?php submit_button( 'Lưu quyền Google' ); ?></form></div>
-    <script>(function(){var c=document.getElementById('lms-site-core-google-allowlist'),a=document.getElementById('lms-site-core-google-add'),t=document.getElementById('lms-site-core-google-template');if(!c||!a||!t)return;a.addEventListener('click',function(){var i=c.querySelectorAll('.lms-site-core-google-row').length;c.insertAdjacentHTML('beforeend',t.innerHTML.replace(/__INDEX__/g,String(i)));});c.addEventListener('click',function(e){if(!e.target.classList.contains('lms-site-core-google-remove'))return;var r=c.querySelectorAll('.lms-site-core-google-row');if(r.length>1)e.target.closest('.lms-site-core-google-row').remove();});}());</script>
-    <?php
-}
-function lms_site_core_enrollment_status( $enrollment ): string {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$rows    = lms_site_core_get_google_allowlist();
+	$courses = get_posts(
+		array(
+			'post_type'      => 'lp_course',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
+
+	if ( empty( $rows ) ) {
+		$rows = array( array( 'email' => '', 'course_ids' => array() ) );
+	}
+	?>
+	<div class="wrap">
+		<h1>Google access pre-approval</h1>
+		<p>Nhập Gmail và chọn các khóa học được cấp tự động sau khi đăng nhập Google. Email ngoài danh sách sẽ không được cấp khóa trả phí.</p>
+
+		<div class="lms-site-core-google-toolbar">
+			<label for="lms-google-access-search"><strong>Tìm Gmail hoặc tài khoản</strong></label>
+			<input id="lms-google-access-search" type="search" class="regular-text" placeholder="Tìm theo Gmail, tên hoặc username">
+			<span id="lms-google-access-count" class="description"></span>
+		</div>
+
+		<form method="post" action="options.php">
+			<?php settings_fields( 'lms_site_core_google_allowlist' ); ?>
+			<div class="lms-site-core-google-table-wrap">
+				<table class="widefat striped lms-site-core-google-table">
+					<thead>
+						<tr>
+							<th>Email Google</th>
+							<th>Tài khoản WordPress</th>
+							<th>Trạng thái</th>
+							<?php foreach ( $courses as $course ) : ?>
+								<th>
+									<?php echo esc_html( $course->post_title ); ?>
+									<?php if ( lms_site_core_is_free_course( (int) $course->ID ) ) : ?>
+										<br><small>Tự động</small>
+									<?php endif; ?>
+								</th>
+							<?php endforeach; ?>
+							<th>Thao tác</th>
+						</tr>
+					</thead>
+					<tbody id="lms-site-core-google-rows">
+					<?php foreach ( $rows as $index => $row ) : ?>
+						<?php
+						$email      = lms_site_core_normalize_email( (string) ( $row['email'] ?? '' ) );
+						$selected   = array_map( 'absint', (array) ( $row['course_ids'] ?? array() ) );
+						$google_user = $email ? get_user_by( 'email', $email ) : false;
+						$account    = $google_user
+							? ( $google_user->display_name ?: $google_user->user_login ) . ' (' . $google_user->user_login . ')'
+							: '';
+						$search_blob = strtolower( trim( $email . ' ' . $account ) );
+						?>
+						<tr class="lms-site-core-google-row" data-search="<?php echo esc_attr( $search_blob ); ?>">
+							<td>
+								<input class="regular-text lms-site-core-google-email" type="email" name="lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][email]" value="<?php echo esc_attr( $email ); ?>" placeholder="student@gmail.com">
+							</td>
+							<td class="lms-site-core-google-account">
+								<?php if ( $google_user ) : ?>
+									<strong><?php echo esc_html( $google_user->display_name ?: $google_user->user_login ); ?></strong><br>
+									<small><?php echo esc_html( $google_user->user_login ); ?></small>
+								<?php elseif ( $email ) : ?>
+									<span class="description">Chưa có tài khoản</span>
+								<?php else : ?>
+									<span class="description">Gmail mới</span>
+								<?php endif; ?>
+							</td>
+							<td class="lms-site-core-google-status">
+								<?php echo $google_user ? 'Đã có tài khoản' : ( $email ? 'Chờ Google login' : 'Chưa lưu' ); ?>
+							</td>
+							<?php foreach ( $courses as $course ) : ?>
+								<?php
+								$course_id = (int) $course->ID;
+								$is_free   = lms_site_core_is_free_course( $course_id );
+								$is_checked = in_array( $course_id, $selected, true );
+								?>
+								<td class="lms-site-core-google-course">
+									<?php if ( $is_free ) : ?>
+										<?php if ( $is_checked ) : ?>
+											<input type="hidden" name="lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][course_ids][]" value="<?php echo esc_attr( $course_id ); ?>">
+										<?php endif; ?>
+										<span class="description">Tự động</span>
+									<?php else : ?>
+										<label>
+											<input type="checkbox" name="lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][course_ids][]" value="<?php echo esc_attr( $course_id ); ?>" <?php checked( $is_checked ); ?>>
+											Cấp quyền
+										</label>
+									<?php endif; ?>
+								</td>
+							<?php endforeach; ?>
+							<td>
+								<button type="button" class="button lms-site-core-google-remove">Xóa dòng</button>
+								<?php if ( $google_user && in_array( 'student', (array) $google_user->roles, true ) ) : ?>
+									<br><a href="<?php echo esc_url( add_query_arg( array( 'page' => 'lms-site-core-enroll', 'student_id' => $google_user->ID ), admin_url( 'admin.php' ) ) ); ?>">Mở enrollment</a>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<p>
+				<button type="button" class="button" id="lms-site-core-google-add">Thêm Gmail</button>
+			</p>
+			<p class="description">Bỏ chọn khóa trả phí rồi lưu sẽ ngăn cấp quyền tự động ở lần Google login sau. Muốn thu hồi enrollment đã tồn tại, mở enrollment của tài khoản đó.</p>
+			<?php submit_button( 'Lưu quyền Google' ); ?>
+		</form>
+	</div>
+
+	<script type="text/template" id="lms-site-core-google-template">
+		<tr class="lms-site-core-google-row" data-search="">
+			<td><input class="regular-text lms-site-core-google-email" type="email" name="lms_site_core_google_allowlist[__INDEX__][email]" placeholder="student@gmail.com"></td>
+			<td class="lms-site-core-google-account"><span class="description">Gmail mới</span></td>
+			<td class="lms-site-core-google-status">Chưa lưu</td>
+			<?php foreach ( $courses as $course ) : ?>
+				<?php if ( lms_site_core_is_free_course( (int) $course->ID ) ) : ?>
+					<td class="lms-site-core-google-course"><span class="description">Tự động</span></td>
+				<?php else : ?>
+					<td class="lms-site-core-google-course">
+						<label><input type="checkbox" name="lms_site_core_google_allowlist[__INDEX__][course_ids][]" value="<?php echo esc_attr( $course->ID ); ?>"> Cấp quyền</label>
+					</td>
+				<?php endif; ?>
+			<?php endforeach; ?>
+			<td><button type="button" class="button lms-site-core-google-remove">Xóa dòng</button></td>
+		</tr>
+	</script>
+
+	<style>
+		.lms-site-core-google-toolbar { display:flex; align-items:center; gap:10px; margin:18px 0 12px; }
+		.lms-site-core-google-toolbar .description { margin-left:4px; }
+		.lms-site-core-google-table-wrap { max-width:1200px; overflow-x:auto; }
+		.lms-site-core-google-table { min-width:900px; }
+		.lms-site-core-google-table th { white-space:nowrap; }
+		.lms-site-core-google-table td { vertical-align:middle; }
+		.lms-site-core-google-email { min-width:220px; }
+		.lms-site-core-google-account { min-width:150px; }
+		.lms-site-core-google-status { min-width:130px; }
+		.lms-site-core-google-course { text-align:center; min-width:115px; }
+		.lms-site-core-google-course label { display:inline-flex; gap:5px; align-items:center; }
+		@media (max-width:782px) {
+			.lms-site-core-google-toolbar { display:block; }
+			.lms-site-core-google-toolbar input { display:block; margin:8px 0; }
+		}
+	</style>
+
+	<script>
+	(function () {
+		var body = document.getElementById('lms-site-core-google-rows');
+		var add = document.getElementById('lms-site-core-google-add');
+		var template = document.getElementById('lms-site-core-google-template');
+		var search = document.getElementById('lms-google-access-search');
+		var count = document.getElementById('lms-google-access-count');
+
+		if (!body || !add || !template) {
+			return;
+		}
+
+		function rows() {
+			return Array.prototype.slice.call(body.querySelectorAll('.lms-site-core-google-row'));
+		}
+
+		function refresh() {
+			var needle = search ? search.value.toLowerCase().trim() : '';
+			var visible = 0;
+			rows().forEach(function (row) {
+				var email = row.querySelector('.lms-site-core-google-email');
+				if (email) {
+					row.dataset.search = email.value.toLowerCase().trim();
+				}
+				var matches = !needle || row.dataset.search.indexOf(needle) !== -1;
+				row.hidden = !matches;
+				if (matches) {
+					visible++;
+				}
+			});
+			if (count) {
+				count.textContent = visible + ' dòng';
+			}
+		}
+
+		add.addEventListener('click', function () {
+			var index = rows().length;
+			body.insertAdjacentHTML('beforeend', template.innerHTML.replace(/__INDEX__/g, String(index)));
+			refresh();
+		});
+
+		body.addEventListener('click', function (event) {
+			if (event.target.classList.contains('lms-site-core-google-remove')) {
+				event.target.closest('.lms-site-core-google-row').remove();
+				refresh();
+			}
+		});
+
+		body.addEventListener('input', refresh);
+		if (search) {
+			search.addEventListener('input', refresh);
+		}
+		refresh();
+	}());
+	</script>
+	<?php
+}function lms_site_core_enrollment_status( $enrollment ): string {
 	if ( is_object( $enrollment ) && method_exists( $enrollment, 'get_status' ) ) {
 		return (string) $enrollment->get_status();
 	}
