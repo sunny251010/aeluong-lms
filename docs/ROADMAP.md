@@ -160,3 +160,10 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Hoàn thiện grant/revoke trong `Students & enrollment`; revoke giữ tiến độ LearnPress.
 - [ ] Kiểm thử end-to-end với Gmail thật trên local và production.
 - [ ] Nhập lại allowlist trên production sau deploy; option và user/enrollment không được đồng bộ bởi rsync source.
+
+### Cập nhật E2E Google và khóa miễn phí — 2026-09-10
+- [x] Sửa lỗi frontend gọi MCP enrollment admin-only (lp_mcp_forbidden) bằng native LearnPress user-item API.
+- [x] Google allowlist tự cấp enrollment khi user đăng nhập bằng email đã cấu hình.
+- [x] User đã đăng nhập được xem lesson của course miễn phí qua LearnPress content gate.
+- [x] Xóa cache enrollment sau grant/revoke để trạng thái cập nhật ngay trong request.
+- [ ] Chạy lại smoke test tương đương trên production sau deploy; allowlist và dữ liệu enrollment phải cấu hình riêng trên production.

@@ -226,3 +226,9 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - Mọi user đã đăng nhập đều được auto-enroll khóa miễn phí đang publish. Vì vậy khóa miễn phí không cần cấp thủ công từng tài khoản; cờ `_lms_contact_course` không còn chặn khóa miễn phí.
 - Màn hình `Students & enrollment` hỗ trợ grant/revoke khóa trả phí. Bỏ tick rồi lưu sẽ đổi enrollment sang `cancel` và giữ lesson progress/metadata của LearnPress để có thể cấp lại sau.
 - Xóa Gmail khỏi allowlist chỉ ngăn cấp quyền ở lần Google login sau, không tự động xóa enrollment hiện có. Muốn thu hồi ngay, admin dùng màn hình enrollment.
+
+### Sửa lỗi cấp quyền Google và lesson miễn phí — 2026-09-10
+- Frontend không còn gọi EnrollmentTools::enroll_student() vì API này yêu cầu capability quản trị và trả lp_mcp_forbidden khi chạy trong hook đăng nhập.
+- LMS Site Core dùng các helper native learn_press_get_user_item() và learn_press_update_user_item_field() để đọc, tạo, reactivate và revoke user-course enrollment của LearnPress.
+- Sau khi ghi enrollment, request cache được xóa để trạng thái enrolled/cancel phản ánh ngay trong cùng request.
+- Filter learnpress/course/can-view-content đồng bộ policy access của LMS Site Core với lesson gate của LearnPress: user đăng nhập có quyền allowlist hoặc course miễn phí được xem nội dung lesson.

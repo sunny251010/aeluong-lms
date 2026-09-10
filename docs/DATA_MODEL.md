@@ -120,3 +120,9 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Enrollment vẫn do LearnPress quản lý qua `UserCourseModel`. Trạng thái active gồm `enrolled`, `purchased`, `finished`, `completed`; revoke dùng `UserItemModel::STATUS_CANCEL` và ghi `end_time`.
 - Revoke không xóa bản ghi con hoặc tiến độ bài học. Cấp lại cùng course sẽ reactivate enrollment hiện có.
 - Course có giá LearnPress bằng 0 được xem là free và tự động có quyền cho mọi user đã đăng nhập; đây là policy runtime, không phải grant riêng trong allowlist.
+
+## DB change: native enrollment adapter — 2026-09-10
+- Không có migration hoặc custom table mới.
+- Enrollment Google/free được ghi vào user-item table native của LearnPress bằng learn_press_update_user_item_field().
+- Revoke đổi status sang cancel, giữ nguyên progress và metadata; cấp lại sẽ reactivate dòng cũ.
+- Request cache chỉ tồn tại trong PHP request, không phải dữ liệu DB.

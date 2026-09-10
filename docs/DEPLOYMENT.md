@@ -203,3 +203,10 @@ Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includ
 - Logout từ profile/account: phải quay về /courses/.
 - Footer phải hiển thị website by Bang Nguyen; click Bang Nguyen mở Facebook đúng URL.
 - Google pre-approval đã có trong LMS Site Core; sau deploy phải nhập lại allowlist tại production vì rsync không đồng bộ option/database. Kiểm tra bằng một Gmail được cấp và một Gmail ngoài danh sách.
+
+### Smoke test Google allowlist và free lesson — 2026-09-10
+- Local đã kiểm tra guest lesson vẫn trả HTTP 200 nhưng giữ thông báo protected.
+- Local đã kiểm tra một phiên user có WordPress auth cookie, dùng Gmail trong allowlist maotuankiet77@gmail.com: course trả HTTP 200 và hiển thị Tiếp tục học.
+- Cùng phiên đó mở lesson của course miễn phí: HTTP 200, không còn marker This content is protected và nội dung lesson được render.
+- Root cause của lỗi cũ là EnrollmentTools::enroll_student() yêu cầu quyền quản trị; bản sửa chuyển sang native LearnPress user-item API.
+- Sau deploy production, kiểm tra lại bằng một Gmail trong allowlist, một Gmail ngoài allowlist và một Gmail đăng nhập course miễn phí.
