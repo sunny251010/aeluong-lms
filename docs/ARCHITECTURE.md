@@ -216,4 +216,13 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - WordPress Admin Bar chỉ hiển thị với user có capability manage_options; Student và tài khoản Google vẫn dùng frontend bình thường nhưng không thấy thanh quản trị.
 - Logout redirect về course archive native của LearnPress.
 - Footer credit được thay trong child theme; Kadence parent không bị sửa. Link Bang Nguyen trỏ tới Facebook cá nhân đã cấu hình.
-- Hướng Google pre-approval: admin quản lý allowlist email exact theo course; sau hook login/register của Google, LMS Site Core tạo enrollment LearnPress idempotent. Cần chốt UI và danh sách email/course trước khi triển khai.
+- Hướng Google pre-approval: admin quản lý allowlist email exact theo course; sau hook login/register của Google, LMS Site Core tạo enrollment LearnPress idempotent. UI đã triển khai tại Settings > Google access; danh sách email/course cần nhập riêng trên từng môi trường.
+
+### Cập nhật cấp quyền Google và thu hồi enrollment — 2026-09-10
+
+- Admin cấu hình allowlist tại `Settings > Google access`: mỗi dòng gồm đúng Gmail Google và các course được cấp tự động.
+- Option WordPress `lms_site_core_google_allowlist` lưu danh sách đã chuẩn hóa email và course ID; không tạo custom table và không lưu Client ID/Client Secret.
+- LMS Site Core lắng nghe `wp_login`, `nsl_google_login` và `nsl_google_register_new_user`. Sau khi Nextend hoàn tất đăng nhập/đăng ký, hệ thống đối chiếu email chính xác rồi gọi LearnPress enrollment idempotent. Email ngoài allowlist không được cấp khóa trả phí.
+- Mọi user đã đăng nhập đều được auto-enroll khóa miễn phí đang publish. Vì vậy khóa miễn phí không cần cấp thủ công từng tài khoản; cờ `_lms_contact_course` không còn chặn khóa miễn phí.
+- Màn hình `Students & enrollment` hỗ trợ grant/revoke khóa trả phí. Bỏ tick rồi lưu sẽ đổi enrollment sang `cancel` và giữ lesson progress/metadata của LearnPress để có thể cấp lại sau.
+- Xóa Gmail khỏi allowlist chỉ ngăn cấp quyền ở lần Google login sau, không tự động xóa enrollment hiện có. Muốn thu hồi ngay, admin dùng màn hình enrollment.

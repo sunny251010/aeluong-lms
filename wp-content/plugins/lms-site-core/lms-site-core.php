@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.18.0
+ * Version: 0.19.0
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -454,6 +454,65 @@ function lms_site_core_render_donation_settings_page(): void {
 /**
  * Find an active LearnPress enrollment for a specific user/course pair.
  */
+/** Normalize an email address used by the Google access allowlist. */
+function lms_site_core_normalize_email( string $email ): string { return strtolower( trim( sanitize_email( $email ) ) ); }
+
+function lms_site_core_get_google_allowlist(): array {
+    $rows = get_option( 'lms_site_core_google_allowlist', array() );
+    return is_array( $rows ) ? $rows : array();
+}
+
+function lms_site_core_sanitize_google_allowlist( $input ): array {
+    $output = array();
+    foreach ( (array) $input as $row ) {
+        if ( ! is_array( $row ) ) { continue; }
+        $email = lms_site_core_normalize_email( (string) ( $row['email'] ?? '' ) );
+        if ( '' === $email || ! is_email( $email ) ) { continue; }
+        $ids = array_values( array_unique( array_filter( array_map( 'absint', (array) ( $row['course_ids'] ?? array() ) ) ) ) );
+        $valid = array();
+        foreach ( $ids as $course_id ) {
+            $course = get_post( $course_id );
+            if ( $course && 'lp_course' === $course->post_type && 'publish' === $course->post_status ) { $valid[] = $course_id; }
+        }
+        if ( $valid ) { $output[ $email ] = array( 'email' => $email, 'course_ids' => $valid ); }
+    }
+    return array_values( $output );
+}
+
+function lms_site_core_register_google_allowlist_settings(): void {
+    register_setting( 'lms_site_core_google_allowlist', 'lms_site_core_google_allowlist', array( 'type' => 'array', 'sanitize_callback' => 'lms_site_core_sanitize_google_allowlist', 'default' => array() ) );
+}
+add_action( 'admin_init', 'lms_site_core_register_google_allowlist_settings' );
+
+function lms_site_core_add_google_allowlist_settings_page(): void {
+    add_options_page( 'Google access - LMS Site Core', 'Google access', 'manage_options', 'lms-site-core-google', 'lms_site_core_render_google_allowlist_settings_page' );
+}
+add_action( 'admin_menu', 'lms_site_core_add_google_allowlist_settings_page', 42 );
+
+function lms_site_core_render_google_allowlist_settings_page(): void {
+    if ( ! current_user_can( 'manage_options' ) ) { return; }
+    $rows = lms_site_core_get_google_allowlist();
+    $courses = get_posts( array( 'post_type' => 'lp_course', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
+    if ( empty( $rows ) ) { $rows = array( array( 'email' => '', 'course_ids' => array() ) ); }
+    ?>
+    <div class='wrap'><h1>Google access pre-approval</h1>
+    <p>Nhập đúng email Google và chọn các khóa học được cấp tự động sau khi đăng nhập. Email ngoài danh sách sẽ không được cấp khóa trả phí.</p>
+    <form method='post' action='options.php'><?php settings_fields( 'lms_site_core_google_allowlist' ); ?>
+    <div id='lms-site-core-google-allowlist'>
+    <?php foreach ( $rows as $index => $row ) : $selected = array_map( 'absint', (array) ( $row['course_ids'] ?? array() ) ); ?>
+        <div class='lms-site-core-google-row' style='border:1px solid #ccd0d4;padding:16px;margin:0 0 12px;max-width:1000px;background:#fff;'>
+        <p><label><strong>Email Google</strong></label><br><input class='regular-text' type='email' name='lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][email]' value='<?php echo esc_attr( $row['email'] ?? '' ); ?>' placeholder='student@gmail.com'></p>
+        <fieldset><legend><strong>Khóa học được cấp</strong></legend><?php foreach ( $courses as $course ) : ?>
+            <label style='display:inline-block;min-width:280px;margin:6px 18px 6px 0;'><input type='checkbox' name='lms_site_core_google_allowlist[<?php echo esc_attr( $index ); ?>][course_ids][]' value='<?php echo esc_attr( $course->ID ); ?>' <?php checked( in_array( (int) $course->ID, $selected, true ) ); ?>> <?php echo esc_html( $course->post_title ); ?></label>
+        <?php endforeach; ?></fieldset>
+        <button type='button' class='button lms-site-core-google-remove'>Xóa dòng</button></div>
+    <?php endforeach; ?></div>
+    <p><button type='button' class='button' id='lms-site-core-google-add'>Thêm email</button></p>
+    <script type='text/template' id='lms-site-core-google-template'><div class='lms-site-core-google-row' style='border:1px solid #ccd0d4;padding:16px;margin:0 0 12px;max-width:1000px;background:#fff;'><p><label><strong>Email Google</strong></label><br><input class='regular-text' type='email' name='lms_site_core_google_allowlist[__INDEX__][email]' placeholder='student@gmail.com'></p><fieldset><legend><strong>Khóa học được cấp</strong></legend><?php foreach ( $courses as $course ) : ?><label style='display:inline-block;min-width:280px;margin:6px 18px 6px 0;'><input type='checkbox' name='lms_site_core_google_allowlist[__INDEX__][course_ids][]' value='<?php echo esc_attr( $course->ID ); ?>'> <?php echo esc_html( $course->post_title ); ?></label><?php endforeach; ?></fieldset><button type='button' class='button lms-site-core-google-remove'>Xóa dòng</button></div></script>
+    <?php submit_button( 'Lưu quyền Google' ); ?></form></div>
+    <script>(function(){var c=document.getElementById('lms-site-core-google-allowlist'),a=document.getElementById('lms-site-core-google-add'),t=document.getElementById('lms-site-core-google-template');if(!c||!a||!t)return;a.addEventListener('click',function(){var i=c.querySelectorAll('.lms-site-core-google-row').length;c.insertAdjacentHTML('beforeend',t.innerHTML.replace(/__INDEX__/g,String(i)));});c.addEventListener('click',function(e){if(!e.target.classList.contains('lms-site-core-google-remove'))return;var r=c.querySelectorAll('.lms-site-core-google-row');if(r.length>1)e.target.closest('.lms-site-core-google-row').remove();});}());</script>
+    <?php
+}
 function lms_site_core_get_user_course_enrollment( int $user_id, int $course_id ) {
 	if ( $user_id <= 0 || $course_id <= 0 || ! class_exists( '\LearnPress\Models\UserItems\UserCourseModel' ) ) {
 		return false;
@@ -474,61 +533,49 @@ function lms_site_core_get_user_course_enrollment( int $user_id, int $course_id 
 }
 
 function lms_site_core_user_has_course_access_for_user( int $user_id, int $course_id ): bool {
-	$enrollment = lms_site_core_get_user_course_enrollment( $user_id, $course_id );
-	$active_statuses = array( 'enrolled', 'purchased', 'finished', 'completed' );
-
-	return $enrollment instanceof \LearnPress\Models\UserItems\UserCourseModel
-		&& in_array( $enrollment->get_status(), $active_statuses, true );
+    if ( $user_id <= 0 || ! get_userdata( $user_id ) ) { return false; }
+    if ( lms_site_core_is_free_course( $course_id ) ) { return true; }
+    $enrollment = lms_site_core_get_user_course_enrollment( $user_id, $course_id );
+    $active_statuses = array( 'enrolled', 'purchased', 'finished', 'completed' );
+    return $enrollment instanceof \LearnPress\Models\UserItems\UserCourseModel && in_array( $enrollment->get_status(), $active_statuses, true );
 }
-
 /**
  * Create a LearnPress enrollment using its official enrollment tool/model.
  */
 function lms_site_core_enroll_user_in_course( int $user_id, int $course_id ) {
-	if ( class_exists( '\LearnPress\MCP\Domain\EnrollmentTools' ) ) {
-		$result = \LearnPress\MCP\Domain\EnrollmentTools::enroll_student(
-			array(
-				'user_id'   => $user_id,
-				'course_id' => $course_id,
-				'status'    => 'enrolled',
-			)
-		);
-
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		}
-
-		return ! empty( $result['already_enrolled'] ) ? 'already' : true;
-	}
-
-	if ( ! class_exists( '\LearnPress\Models\UserItems\UserCourseModel' ) ) {
-		return new WP_Error( 'learnpress_unavailable', 'LearnPress enrollment model is unavailable.' );
-	}
-
-	try {
-		$existing = lms_site_core_get_user_course_enrollment( $user_id, $course_id );
-		$active_statuses = array( 'enrolled', 'purchased', 'finished', 'completed' );
-
-		if ( $existing instanceof \LearnPress\Models\UserItems\UserCourseModel && in_array( $existing->get_status(), $active_statuses, true ) ) {
-			return 'already';
-		}
-
-		$enrollment             = new \LearnPress\Models\UserItems\UserCourseModel();
-		$enrollment->user_id    = $user_id;
-		$enrollment->item_id    = $course_id;
-		$enrollment->item_type  = LP_COURSE_CPT;
-		$enrollment->ref_type   = '';
-		$enrollment->status     = 'enrolled';
-		$enrollment->graduation = 'in-progress';
-		$enrollment->start_time = gmdate( 'Y-m-d H:i:s' );
-		$enrollment->save();
-
-		return true;
-	} catch ( Throwable $exception ) {
-		return new WP_Error( 'enrollment_failed', $exception->getMessage() );
-	}
+    if ( ! class_exists( '\LearnPress\Models\UserItems\UserCourseModel' ) ) { return new WP_Error( 'learnpress_unavailable', 'LearnPress enrollment model is unavailable.' ); }
+    try {
+        $existing = lms_site_core_get_user_course_enrollment( $user_id, $course_id );
+        $active_statuses = array( 'enrolled', 'purchased', 'finished', 'completed' );
+        if ( $existing instanceof \LearnPress\Models\UserItems\UserCourseModel && in_array( $existing->get_status(), $active_statuses, true ) ) { return 'already'; }
+        if ( $existing instanceof \LearnPress\Models\UserItems\UserCourseModel ) {
+            $existing->status = \LearnPress\Models\UserItems\UserItemModel::STATUS_ENROLLED;
+            $existing->end_time = null;
+            $existing->save();
+            return true;
+        }
+    } catch ( Throwable $exception ) { return new WP_Error( 'enrollment_reactivation_failed', $exception->getMessage() ); }
+    if ( class_exists( '\LearnPress\MCP\Domain\EnrollmentTools' ) ) {
+        $result = \LearnPress\MCP\Domain\EnrollmentTools::enroll_student( array( 'user_id' => $user_id, 'course_id' => $course_id, 'status' => 'enrolled' ) );
+        if ( is_wp_error( $result ) ) { return $result; }
+        return ! empty( $result['already_enrolled'] ) ? 'already' : true;
+    }
+    try {
+        $enrollment = new \LearnPress\Models\UserItems\UserCourseModel();
+        $enrollment->user_id = $user_id; $enrollment->item_id = $course_id; $enrollment->item_type = LP_COURSE_CPT; $enrollment->ref_type = '';
+        $enrollment->status = \LearnPress\Models\UserItems\UserItemModel::STATUS_ENROLLED; $enrollment->graduation = 'in-progress'; $enrollment->start_time = gmdate( 'Y-m-d H:i:s' );
+        $enrollment->save(); return true;
+    } catch ( Throwable $exception ) { return new WP_Error( 'enrollment_failed', $exception->getMessage() ); }
 }
 
+/** Revoke LearnPress access while retaining the user's progress records. */
+function lms_site_core_revoke_user_from_course( int $user_id, int $course_id ) {
+    $enrollment = lms_site_core_get_user_course_enrollment( $user_id, $course_id );
+    if ( ! $enrollment instanceof \LearnPress\Models\UserItems\UserCourseModel ) { return 'not_found'; }
+    if ( \LearnPress\Models\UserItems\UserItemModel::STATUS_CANCEL === $enrollment->get_status() ) { return 'already'; }
+    try { $enrollment->status = \LearnPress\Models\UserItems\UserItemModel::STATUS_CANCEL; $enrollment->end_time = gmdate( 'Y-m-d H:i:s' ); $enrollment->save(); return true; }
+    catch ( Throwable $exception ) { return new WP_Error( 'revoke_failed', $exception->getMessage() ); }
+}
 function lms_site_core_admin_enrollment_redirect( string $notice, string $message, int $student_id = 0 ): void {
 	$args = array(
 		'page'               => 'lms-site-core-enroll',
@@ -587,43 +634,25 @@ function lms_site_core_process_create_student_admin_form(): void {
 add_action( 'admin_post_lms_site_core_create_student', 'lms_site_core_process_create_student_admin_form' );
 
 function lms_site_core_process_student_courses_admin_form(): void {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'You are not allowed to manage student access.', 'lms-site-core' ) );
-	}
-
-	check_admin_referer( 'lms_site_core_set_student_courses', 'lms_site_core_set_student_courses_nonce' );
-
-	$student_id = isset( $_POST['student_id'] ) ? absint( $_POST['student_id'] ) : 0;
-	$student    = $student_id > 0 ? get_userdata( $student_id ) : false;
-	$course_ids = isset( $_POST['course_ids'] ) && is_array( $_POST['course_ids'] )
-		? array_values( array_filter( array_map( 'absint', $_POST['course_ids'] ) ) )
-		: array();
-
-	if ( ! $student || ! in_array( 'student', (array) $student->roles, true ) ) {
-		lms_site_core_admin_enrollment_redirect( 'error', 'Please select a valid Student account.' );
-	}
-
-	$granted = 0;
-	$already = 0;
-
-	foreach ( $course_ids as $course_id ) {
-		$course = get_post( $course_id );
-
-		if ( ! $course || 'lp_course' !== $course->post_type || 'publish' !== $course->post_status ) {
-			continue;
-		}
-
-		$result = lms_site_core_enroll_user_in_course( $student_id, $course_id );
-
-		if ( 'already' === $result ) {
-			$already++;
-		} elseif ( true === $result ) {
-			$granted++;
-		}
-	}
-
-	$message = sprintf( 'Granted access to %d course(s). Existing access kept: %d.', $granted, $already );
-	lms_site_core_admin_enrollment_redirect( 'success', $message, $student_id );
+    if ( ! current_user_can( 'manage_options' ) ) { wp_die( esc_html__( 'You are not allowed to manage student access.', 'lms-site-core' ) ); }
+    check_admin_referer( 'lms_site_core_set_student_courses', 'lms_site_core_set_student_courses_nonce' );
+    $student_id = isset( $_POST['student_id'] ) ? absint( $_POST['student_id'] ) : 0;
+    $student = $student_id > 0 ? get_userdata( $student_id ) : false;
+    $selected_ids = isset( $_POST['course_ids'] ) && is_array( $_POST['course_ids'] ) ? array_values( array_unique( array_filter( array_map( 'absint', $_POST['course_ids'] ) ) ) ) : array();
+    if ( ! $student || ! in_array( 'student', (array) $student->roles, true ) ) { lms_site_core_admin_enrollment_redirect( 'error', 'Please select a valid Student account.' ); }
+    $courses = get_posts( array( 'post_type' => 'lp_course', 'post_status' => 'publish', 'posts_per_page' => -1 ) );
+    $granted = 0; $revoked = 0; $unchanged = 0; $errors = 0;
+    foreach ( $courses as $course ) {
+        $course_id = (int) $course->ID;
+        if ( lms_site_core_is_free_course( $course_id ) ) { continue; }
+        $has_access = lms_site_core_user_has_course_access_for_user( $student_id, $course_id );
+        $should_have_access = in_array( $course_id, $selected_ids, true );
+        if ( $should_have_access && ! $has_access ) { $result = lms_site_core_enroll_user_in_course( $student_id, $course_id ); if ( 'already' === $result ) { $unchanged++; } elseif ( true === $result ) { $granted++; } else { $errors++; } }
+        elseif ( ! $should_have_access && $has_access ) { $result = lms_site_core_revoke_user_from_course( $student_id, $course_id ); if ( 'already' === $result || 'not_found' === $result ) { $unchanged++; } elseif ( true === $result ) { $revoked++; } else { $errors++; } }
+        else { $unchanged++; }
+    }
+    $message = sprintf( 'Granted: %d. Revoked: %d. No change: %d. Errors: %d.', $granted, $revoked, $unchanged, $errors );
+    lms_site_core_admin_enrollment_redirect( $errors ? 'error' : 'success', $message, $student_id );
 }
 add_action( 'admin_post_lms_site_core_set_student_courses', 'lms_site_core_process_student_courses_admin_form' );
 
@@ -739,25 +768,25 @@ function lms_site_core_render_enrollment_admin_page(): void {
 			<div id="student-courses" style="max-width:1100px;margin-top:28px;">
 				<h2>Manage courses for <?php echo esc_html( $selected->display_name ?: $selected->user_login ); ?></h2>
 				<p><?php echo esc_html( $selected->user_login . ( $selected->user_email ? ' · ' . $selected->user_email : '' ) ); ?></p>
-				<p class="description">Checked courses already have access. This screen grants access; it does not remove progress.</p>
+				<p class="description">Tick a paid course to grant access. Untick a paid course to revoke access; progress is kept by LearnPress. Free courses are automatically available to logged-in users.</p>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="lms_site_core_set_student_courses">
 					<input type="hidden" name="student_id" value="<?php echo esc_attr( $selected->ID ); ?>">
 					<?php wp_nonce_field( 'lms_site_core_set_student_courses', 'lms_site_core_set_student_courses_nonce' ); ?>
 					<table class="widefat striped">
-						<thead><tr><th>Grant</th><th>Course</th><th>Status</th></tr></thead>
+						<thead><tr><th>Access</th><th>Course</th><th>Status</th></tr></thead>
 						<tbody>
 						<?php foreach ( $courses as $course_item ) : ?>
-							<?php $has_access = lms_site_core_user_has_course_access_for_user( (int) $selected->ID, (int) $course_item->ID ); ?>
+							<?php $is_free = lms_site_core_is_free_course( (int) $course_item->ID ); $has_access = lms_site_core_user_has_course_access_for_user( (int) $selected->ID, (int) $course_item->ID ); ?>
 							<tr>
-								<td><input type="checkbox" name="course_ids[]" value="<?php echo esc_attr( $course_item->ID ); ?>" <?php checked( $has_access ); ?> <?php disabled( $has_access ); ?>></td>
+								<td><input type="checkbox" name="course_ids[]" value="<?php echo esc_attr( $course_item->ID ); ?>" <?php checked( $has_access || $is_free ); ?> <?php disabled( $is_free ); ?>></td>
 								<td><?php echo esc_html( $course_item->post_title ); ?></td>
-								<td><?php echo $has_access ? '<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span> Access granted' : 'Not granted'; ?></td>
+								<td><?php echo $is_free ? '<span class="dashicons dashicons-unlock" aria-hidden="true"></span> Automatic access' : ( $has_access ? '<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span> Access granted' : 'Not granted' ); ?></td>
 							</tr>
 						<?php endforeach; ?>
 						</tbody>
 					</table>
-					<?php submit_button( 'Grant selected access' ); ?>
+					<?php submit_button( 'Save course access' ); ?>
 				</form>
 			</div>
 		<?php endif; ?>
@@ -1197,15 +1226,20 @@ add_filter( 'rest_post_dispatch', 'lms_site_core_filter_course_rest_response', 2
 
 
 
-/**
- * Identify courses that require admin contact before access is granted.
- */
-function lms_site_core_is_contact_course( int $course_id ): bool {
-	return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true );
+/** Return true when LearnPress stores a zero price for the course. */
+function lms_site_core_is_free_course( int $course_id ): bool {
+    if ( $course_id <= 0 || 'lp_course' !== get_post_type( $course_id ) ) { return false; }
+    if ( class_exists( '\LearnPress\Models\CourseModel' ) ) {
+        $course = \LearnPress\Models\CourseModel::find( $course_id, true );
+        if ( $course && method_exists( $course, 'is_free' ) ) { return (bool) $course->is_free(); }
+    }
+    return (float) get_post_meta( $course_id, '_lp_price', true ) <= 0;
 }
-/**
- * Display a contact label for manually granted courses while keeping LearnPress price data intact.
- */
+
+/** Identify paid courses that require admin contact before access is granted. */
+function lms_site_core_is_contact_course( int $course_id ): bool {
+    return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true ) && ! lms_site_core_is_free_course( $course_id );
+}
 function lms_site_core_contact_course_price_html( $price_html, $course ) {
 	$course_id = lms_site_core_course_id( $course );
 
@@ -1824,3 +1858,37 @@ function lms_site_core_logout_redirect_to_courses( string $redirect_to, string $
 	return $courses_url ?: home_url( '/' );
 }
 add_filter( 'logout_redirect', 'lms_site_core_logout_redirect_to_courses', 20, 3 );
+/** Enroll authenticated users in every free course. */
+function lms_site_core_auto_enroll_free_courses_for_user( int $user_id ): void {
+    if ( $user_id <= 0 || ! get_userdata( $user_id ) ) { return; }
+    $courses = get_posts( array( 'post_type' => 'lp_course', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids' ) );
+    foreach ( $courses as $course_id ) {
+        if ( lms_site_core_is_free_course( (int) $course_id ) ) { lms_site_core_enroll_user_in_course( $user_id, (int) $course_id ); }
+    }
+}
+
+/** Enroll an allowlisted Google email in its configured courses. */
+function lms_site_core_auto_enroll_google_user( int $user_id ): void {
+    lms_site_core_auto_enroll_free_courses_for_user( $user_id );
+    if ( $user_id <= 0 ) { return; }
+    $user = get_userdata( $user_id );
+    if ( ! $user ) { return; }
+    $email = lms_site_core_normalize_email( (string) $user->user_email );
+    foreach ( lms_site_core_get_google_allowlist() as $row ) {
+        if ( ! is_array( $row ) || lms_site_core_normalize_email( (string) ( $row['email'] ?? '' ) ) !== $email ) { continue; }
+        foreach ( (array) ( $row['course_ids'] ?? array() ) as $course_id ) {
+            $course_id = absint( $course_id );
+            $course = get_post( $course_id );
+            if ( $course && 'lp_course' === $course->post_type && 'publish' === $course->post_status ) { lms_site_core_enroll_user_in_course( $user_id, $course_id ); }
+        }
+        break;
+    }
+}
+
+function lms_site_core_auto_enroll_authenticated_user( $user_login, $user ): void {
+    $user_id = is_object( $user ) && isset( $user->ID ) ? (int) $user->ID : 0;
+    lms_site_core_auto_enroll_free_courses_for_user( $user_id );
+}
+add_action( 'wp_login', 'lms_site_core_auto_enroll_authenticated_user', 20, 2 );
+add_action( 'nsl_google_login', 'lms_site_core_auto_enroll_google_user', 20, 3 );
+add_action( 'nsl_google_register_new_user', 'lms_site_core_auto_enroll_google_user', 20, 2 );

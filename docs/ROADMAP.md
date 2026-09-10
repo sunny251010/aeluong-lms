@@ -149,4 +149,14 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Ẩn WordPress Admin Bar với tài khoản không có quyền quản trị.
 - [x] Logout quay về trang Courses.
 - [x] Đổi footer credit sang website by Bang Nguyen và liên kết Facebook.
-- [ ] Xây Google pre-approval allowlist theo email và course sau khi chốt danh sách được cấp quyền.
+- [x] Xây Google pre-approval allowlist theo email và course; danh sách được cấp quyền nhập trong Settings > Google access.
+
+### Cập nhật Google pre-approval và quyền học — 2026-09-10
+
+- [x] Thêm trang admin `Settings > Google access` để nhập Gmail và chọn course được cấp tự động.
+- [x] Đối chiếu email sau Nextend Google login/register và tạo enrollment LearnPress cho đúng Gmail/course.
+- [x] Không cấp course trả phí cho email Google ngoài allowlist.
+- [x] Cho phép user đã đăng nhập tự động học các course miễn phí đang publish.
+- [x] Hoàn thiện grant/revoke trong `Students & enrollment`; revoke giữ tiến độ LearnPress.
+- [ ] Kiểm thử end-to-end với Gmail thật trên local và production.
+- [ ] Nhập lại allowlist trên production sau deploy; option và user/enrollment không được đồng bộ bởi rsync source.

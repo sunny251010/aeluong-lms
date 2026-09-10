@@ -202,4 +202,4 @@ Khi triển khai sau này: deploy đầy đủ plugin lms-site-core gồm includ
 - Admin: vẫn thấy Admin Bar và truy cập wp-admin bình thường.
 - Logout từ profile/account: phải quay về /courses/.
 - Footer phải hiển thị website by Bang Nguyen; click Bang Nguyen mở Facebook đúng URL.
-- Google pre-approval sẽ cần cấu hình riêng trên production sau khi tính năng allowlist được triển khai.
+- Google pre-approval đã có trong LMS Site Core; sau deploy phải nhập lại allowlist tại production vì rsync không đồng bộ option/database. Kiểm tra bằng một Gmail được cấp và một Gmail ngoài danh sách.

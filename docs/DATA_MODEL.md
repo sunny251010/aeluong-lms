@@ -113,3 +113,10 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 
 - Enrollment cache chỉ tồn tại trong vòng đời một PHP request, key theo `user_id:course_id`.
 - Cache không tạo bảng, không ghi option và không thay đổi trạng thái enrollment; request mới luôn đọc lại từ LearnPress.
+## DB change: Google access allowlist và revoke — 2026-09-10
+
+- Thêm option `lms_site_core_google_allowlist` dạng array: `email` đã normalize về lowercase và `course_ids` là các ID `lp_course` đang publish.
+- Không thêm custom table, không migration schema. OAuth account và user email vẫn do WordPress/Nextend quản lý.
+- Enrollment vẫn do LearnPress quản lý qua `UserCourseModel`. Trạng thái active gồm `enrolled`, `purchased`, `finished`, `completed`; revoke dùng `UserItemModel::STATUS_CANCEL` và ghi `end_time`.
+- Revoke không xóa bản ghi con hoặc tiến độ bài học. Cấp lại cùng course sẽ reactivate enrollment hiện có.
+- Course có giá LearnPress bằng 0 được xem là free và tự động có quyền cho mọi user đã đăng nhập; đây là policy runtime, không phải grant riêng trong allowlist.
