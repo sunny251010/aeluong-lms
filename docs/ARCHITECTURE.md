@@ -239,3 +239,13 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - Nếu Gmail đã có WordPress account, bảng hiển thị display name/username và liên kết mở Students & enrollment.
 - Course miễn phí hiển thị Tự động và không cần cấp thủ công.
 - Allowlist chỉ quyết định việc tự cấp ở lần Google login; enrollment LearnPress đã tồn tại vẫn phải thu hồi tại Students & enrollment.
+### Cập nhật action menu mobile — 2026-09-12
+
+- Kadence mobile drawer dùng menu location mobile hoặc menu primary với menu_id là mobile-menu, không tự render Secondary Navigation.
+- LMS Site Core tự thêm Donation và Login/avatar vào mobile drawer bằng filter wp_nav_menu_items.
+- Hai item mobile dùng lại modal trigger và profile logic hiện có; không tạo menu mới, không thay đổi database.
+### Bổ sung logout mobile — 2026-09-12
+
+- Mobile drawer hiển thị avatar/username để mở profile và thêm action Đăng xuất riêng bên dưới.
+- Logout dùng wp_logout_url() native; redirect sau logout vẫn do flow hiện có xử lý.
+- Donation mobile dùng nền trong suốt và màu chữ theo mobile navigation của Kadence; desktop giữ nguyên style button.

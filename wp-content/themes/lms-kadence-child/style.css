@@ -1284,3 +1284,51 @@ body.lms-site-core-contact-page .lms-site-core-contact-form textarea:focus {
     display: none;
   }
 }
+/* Mobile drawer actions appended by LMS Site Core. */
+@media (max-width: 1024px) {
+  #mobile-menu > .lms-mobile-action-item {
+    margin-top: 10px;
+  }
+
+  #mobile-menu > .lms-mobile-action-item:first-of-type {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #d8dee9;
+  }
+
+  #mobile-menu > .lms-mobile-action-item > a {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1025px) {
+  .lms-mobile-action-item {
+    display: none !important;
+  }
+}
+/* Mobile drawer action colors and logout. */
+@media (max-width: 1024px) {
+  #mobile-menu > .lms-mobile-action-item.lms-donation-menu-item > a,
+  #mobile-menu > .lms-mobile-action-item.lms-logout-menu-item > a {
+    background: transparent !important;
+    border-color: transparent !important;
+    border-radius: 0;
+    color: #fff !important;
+    justify-content: flex-start;
+  }
+
+  #mobile-menu > .lms-mobile-action-item.lms-donation-menu-item > a:hover,
+  #mobile-menu > .lms-mobile-action-item.lms-donation-menu-item > a:focus,
+  #mobile-menu > .lms-mobile-action-item.lms-logout-menu-item > a:hover,
+  #mobile-menu > .lms-mobile-action-item.lms-logout-menu-item > a:focus {
+    background: rgba(255, 255, 255, .06) !important;
+    color: #fff !important;
+  }
+
+  #mobile-menu > .lms-mobile-action-item.lms-logout-menu-item {
+    margin-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, .14);
+  }
+}

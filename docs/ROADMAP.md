@@ -174,3 +174,13 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Hiển thị trạng thái tài khoản và liên kết sang Students & enrollment khi phù hợp.
 - [x] Đánh dấu course miễn phí là quyền tự động, không cấp thủ công.
 - [ ] Kiểm tra lại giao diện bảng trên production sau khi upload plugin.
+### Cập nhật mobile navigation — 2026-09-12
+
+- [x] Hiển thị Donation và Login/avatar trong Kadence mobile drawer.
+- [x] Tái sử dụng modal trigger và profile link hiện có.
+- [ ] Smoke test guest và logged-in ở viewport mobile trên local và production.
+### Bổ sung logout và đồng bộ style mobile — 2026-09-12
+
+- [x] Donation mobile đồng bộ nền/chữ với Khóa học và Liên hệ.
+- [x] Thêm nút Đăng xuất dưới avatar trong mobile drawer.
+- [ ] Smoke test guest, logged-in và logout ở viewport mobile trên production.

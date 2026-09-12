@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.20.0
+ * Version: 0.21.1
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1941,17 +1941,41 @@ function lms_site_core_menu_item_fragment( $item ): string {
 }
 
 /**
- * Check whether a menu filter is rendering Kadence's Secondary Navigation.
+ * Check whether a menu filter is rendering an action-capable navigation.
+ *
+ * Kadence renders the desktop actions from Secondary Navigation and the mobile
+ * drawer from the Mobile location or the Primary menu with menu_id mobile-menu.
  */
-function lms_site_core_is_secondary_navigation( $args ): bool {
-	return is_object( $args ) && isset( $args->theme_location ) && 'secondary' === (string) $args->theme_location;
+function lms_site_core_is_action_navigation( $args ): bool {
+	if ( ! is_object( $args ) ) {
+		return false;
+	}
+
+	$theme_location = isset( $args->theme_location ) ? (string) $args->theme_location : '';
+	$menu_id        = isset( $args->menu_id ) ? (string) $args->menu_id : '';
+
+	return 'secondary' === $theme_location || 'mobile' === $theme_location || 'mobile-menu' === $menu_id;
+}
+
+/**
+ * Check whether a menu filter is rendering Kadence's mobile drawer menu.
+ */
+function lms_site_core_is_mobile_navigation( $args ): bool {
+	if ( ! is_object( $args ) ) {
+		return false;
+	}
+
+	$theme_location = isset( $args->theme_location ) ? (string) $args->theme_location : '';
+	$menu_id        = isset( $args->menu_id ) ? (string) $args->menu_id : '';
+
+	return 'mobile' === $theme_location || 'mobile-menu' === $menu_id;
 }
 
 /**
  * Mark only manually added Secondary Navigation action items.
  */
-function lms_site_core_mark_secondary_menu_items( array $items, $args ): array {
-	if ( ! lms_site_core_is_secondary_navigation( $args ) ) {
+function lms_site_core_mark_action_menu_items( array $items, $args ): array {
+	if ( ! lms_site_core_is_action_navigation( $args ) ) {
 		return $items;
 	}
 
@@ -1968,13 +1992,13 @@ function lms_site_core_mark_secondary_menu_items( array $items, $args ): array {
 
 	return $items;
 }
-add_filter( 'wp_nav_menu_objects', 'lms_site_core_mark_secondary_menu_items', 20, 2 );
+add_filter( 'wp_nav_menu_objects', 'lms_site_core_mark_action_menu_items', 20, 2 );
 
 /**
  * Add modal triggers or the authenticated profile URL to Secondary Navigation links.
  */
 function lms_site_core_secondary_link_attributes( array $atts, $item, $args, int $depth ): array {
-	if ( ! lms_site_core_is_secondary_navigation( $args ) ) {
+	if ( ! lms_site_core_is_action_navigation( $args ) ) {
 		return $atts;
 	}
 
@@ -2007,7 +2031,7 @@ add_filter( 'nav_menu_link_attributes', 'lms_site_core_secondary_link_attributes
  * Replace the logged-in Login label with the current user's avatar and display name.
  */
 function lms_site_core_secondary_menu_item_title( string $title, $item, $args, int $depth ): string {
-	if ( ! lms_site_core_is_secondary_navigation( $args ) || ! is_user_logged_in() || 'lms-login-modal' !== lms_site_core_menu_item_fragment( $item ) ) {
+	if ( ! lms_site_core_is_action_navigation( $args ) || ! is_user_logged_in() || 'lms-login-modal' !== lms_site_core_menu_item_fragment( $item ) ) {
 		return $title;
 	}
 
@@ -2018,6 +2042,54 @@ function lms_site_core_secondary_menu_item_title( string $title, $item, $args, i
 	return $avatar . '<span class="lms-user-menu-name">' . esc_html( $display_name ) . '</span>';
 }
 add_filter( 'nav_menu_item_title', 'lms_site_core_secondary_menu_item_title', 20, 4 );
+/**
+ * Add Donation, Login/avatar and Logout actions to Kadence's mobile drawer.
+ *
+ * The existing Secondary Navigation is desktop-only in this theme. This keeps
+ * the mobile actions in the same drawer as Courses and Contact while reusing
+ * the existing modal, profile and WordPress logout behavior.
+ */
+function lms_site_core_append_mobile_action_items( string $items, $args ): string {
+	if ( ! lms_site_core_is_mobile_navigation( $args ) ) {
+		return $items;
+	}
+
+	if ( false === strpos( $items, 'lms-support-modal' ) ) {
+		$items .= '<li class="menu-item lms-mobile-action-item lms-donation-menu-item"><a href="#lms-support-modal" data-lms-support-trigger="1">&#7910;ng h&#7897;</a></li>';
+	}
+
+	$has_account_item = false !== strpos( $items, 'lms-login-modal' )
+		|| false !== strpos( $items, 'lms-login-menu-item' )
+		|| false !== strpos( $items, 'lms-user-menu-item' );
+
+	if ( ! $has_account_item ) {
+		if ( is_user_logged_in() ) {
+			$user         = wp_get_current_user();
+			$display_name = $user->display_name ?: $user->user_login;
+			$profile_url  = function_exists( 'learn_press_user_profile_url' )
+				? (string) learn_press_user_profile_url()
+				: '';
+
+			if ( ! $profile_url ) {
+				$profile_page = get_page_by_path( 'lp-profile' );
+				$profile_url  = $profile_page ? (string) get_permalink( $profile_page ) : '';
+			}
+
+			$avatar = get_avatar( $user->ID, 32, '', $display_name, array( 'class' => array( 'lms-user-avatar' ) ) );
+			$items .= '<li class="menu-item lms-mobile-action-item lms-user-menu-item"><a href="' . esc_url( $profile_url ?: '#' ) . '">' . $avatar . '<span class="lms-user-menu-name">' . esc_html( $display_name ) . '</span></a></li>';
+		} else {
+			$items .= '<li class="menu-item lms-mobile-action-item lms-login-menu-item"><a href="#lms-login-modal" data-lms-login-trigger="1">&#272;&#259;ng nh&#7853;p</a></li>';
+		}
+	}
+
+	if ( is_user_logged_in() && false === strpos( $items, 'lms-logout-menu-item' ) ) {
+		$logout_url = wp_logout_url( home_url( '/' ) );
+		$items .= '<li class="menu-item lms-mobile-action-item lms-logout-menu-item"><a href="' . esc_url( $logout_url ) . '">&#272;&#259;ng xu&#7845;t</a></li>';
+	}
+
+	return $items;
+}
+add_filter( 'wp_nav_menu_items', 'lms_site_core_append_mobile_action_items', 30, 2 );
 
 /**
  * Return the Google button rendered by Nextend Social Login when Google is enabled.

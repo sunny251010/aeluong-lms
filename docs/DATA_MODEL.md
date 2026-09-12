@@ -131,3 +131,11 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 - Không thay đổi schema hoặc option shape. Option lms_site_core_google_allowlist vẫn lưu mảng email và course_ids.
 - Bảng quản trị chỉ là lớp hiển thị/chỉnh sửa option hiện có.
 - Tài khoản WordPress được tra cứu theo email bằng API native get_user_by(); không tạo user hoặc bảng mới.
+## Mobile action menu — 2026-09-12
+
+- Không có thay đổi schema, option hoặc dữ liệu menu.
+- Donation/Login mobile được render runtime từ trạng thái đăng nhập hiện tại.
+## Logout mobile — 2026-09-12
+
+- Không có thay đổi DB hoặc option.
+- Logout chỉ tạo URL runtime bằng API native của WordPress.
