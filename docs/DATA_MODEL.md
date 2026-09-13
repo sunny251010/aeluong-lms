@@ -68,7 +68,7 @@ Trước khi viết custom logic cấp quyền, cần kiểm tra API/hooks/funct
 
 - Course ID 13: Giao tiếp tiếng Anh cơ bản, giữ enrollment test local hiện có.
 - Course ID 33: Giao tiếp tiếng Anh nâng cao, có section và lesson mẫu.
-- Course ID 34: Giao tiếp tiếng Anh miễn phí cho sinh viên, có section và lesson mẫu; meta _lms_contact_course = 1 để yêu cầu liên hệ admin qua Zalo trước khi cấp quyền.
+- Course ID 34: Giao tiếp tiếng Anh miễn phí cho sinh viên, có section và lesson mẫu; có thể bật meta _lms_contact_course = 1 nếu muốn chuyển sang quy trình liên hệ admin qua Zalo.
 - Modal Support hiện dùng ảnh placeholder và thông tin ngân hàng demo; chưa phải thông tin nhận tiền thật.
 
 
@@ -105,7 +105,7 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 
 ## Quy tắc hiển thị CTA và giá liên hệ
 
-- `_lms_contact_course = 1` là cờ nghiệp vụ cho khóa cần admin cấp quyền thủ công.
+- `_lms_contact_course = 1` là cờ nghiệp vụ cho khóa cần admin cấp quyền thủ công, kể cả khi giá LearnPress bằng 0.
 - Guest thấy `Xem chi tiết` và có thể mở trang khóa; user đã đăng nhập nhưng chưa có quyền đi qua luồng liên hệ.
 - User đã có quyền luôn có `Tiếp tục học`; nếu chưa có lesson tiếp theo, hệ thống dùng permalink khóa học làm fallback.
 - `Liên hệ` chỉ là giá hiển thị. LearnPress vẫn lưu giá numeric/free gốc để giữ tương thích checkout và dữ liệu order về sau.

@@ -531,7 +531,7 @@ function lms_site_core_render_google_allowlist_settings_page(): void {
 							<?php foreach ( $courses as $course ) : ?>
 								<th>
 									<?php echo esc_html( $course->post_title ); ?>
-									<?php if ( lms_site_core_is_free_course( (int) $course->ID ) ) : ?>
+									<?php if ( lms_site_core_is_free_course( (int) $course->ID ) && ! lms_site_core_is_contact_course( (int) $course->ID ) ) : ?>
 										<br><small>Tự động</small>
 									<?php endif; ?>
 								</th>
@@ -570,7 +570,7 @@ function lms_site_core_render_google_allowlist_settings_page(): void {
 							<?php foreach ( $courses as $course ) : ?>
 								<?php
 								$course_id = (int) $course->ID;
-								$is_free   = lms_site_core_is_free_course( $course_id );
+								$is_free   = lms_site_core_is_free_course( $course_id ) && ! lms_site_core_is_contact_course( $course_id );
 								$is_checked = in_array( $course_id, $selected, true );
 								?>
 								<td class="lms-site-core-google-course">
@@ -613,7 +613,7 @@ function lms_site_core_render_google_allowlist_settings_page(): void {
 			<td class="lms-site-core-google-account"><span class="description">Gmail mới</span></td>
 			<td class="lms-site-core-google-status">Chưa lưu</td>
 			<?php foreach ( $courses as $course ) : ?>
-				<?php if ( lms_site_core_is_free_course( (int) $course->ID ) ) : ?>
+				<?php if ( lms_site_core_is_free_course( (int) $course->ID ) && ! lms_site_core_is_contact_course( (int) $course->ID ) ) : ?>
 					<td class="lms-site-core-google-course"><span class="description">Tự động</span></td>
 				<?php else : ?>
 					<td class="lms-site-core-google-course">
@@ -767,7 +767,7 @@ function lms_site_core_user_has_course_access_for_user( int $user_id, int $cours
 	if ( $user_id <= 0 || ! get_userdata( $user_id ) ) {
 		return false;
 	}
-	if ( lms_site_core_is_free_course( $course_id ) ) {
+	if ( lms_site_core_is_free_course( $course_id ) && ! lms_site_core_is_contact_course( $course_id ) ) {
 		return true;
 	}
 
@@ -956,7 +956,7 @@ function lms_site_core_process_student_courses_admin_form(): void {
     $granted = 0; $revoked = 0; $unchanged = 0; $errors = 0;
     foreach ( $courses as $course ) {
         $course_id = (int) $course->ID;
-        if ( lms_site_core_is_free_course( $course_id ) ) { continue; }
+        if ( lms_site_core_is_free_course( $course_id ) && ! lms_site_core_is_contact_course( $course_id ) ) { continue; }
         $has_access = lms_site_core_user_has_course_access_for_user( $student_id, $course_id );
         $should_have_access = in_array( $course_id, $selected_ids, true );
         if ( $should_have_access && ! $has_access ) { $result = lms_site_core_enroll_user_in_course( $student_id, $course_id ); if ( 'already' === $result ) { $unchanged++; } elseif ( true === $result ) { $granted++; } else { $errors++; } }
@@ -1089,7 +1089,7 @@ function lms_site_core_render_enrollment_admin_page(): void {
 						<thead><tr><th>Access</th><th>Course</th><th>Status</th></tr></thead>
 						<tbody>
 						<?php foreach ( $courses as $course_item ) : ?>
-							<?php $is_free = lms_site_core_is_free_course( (int) $course_item->ID ); $has_access = lms_site_core_user_has_course_access_for_user( (int) $selected->ID, (int) $course_item->ID ); ?>
+							<?php $is_free = lms_site_core_is_free_course( (int) $course_item->ID ) && ! lms_site_core_is_contact_course( (int) $course_item->ID ); $has_access = lms_site_core_user_has_course_access_for_user( (int) $selected->ID, (int) $course_item->ID ); ?>
 							<tr>
 								<td><input type="checkbox" name="course_ids[]" value="<?php echo esc_attr( $course_item->ID ); ?>" <?php checked( $has_access || $is_free ); ?> <?php disabled( $is_free ); ?>></td>
 								<td><?php echo esc_html( $course_item->post_title ); ?></td>
@@ -1548,9 +1548,9 @@ function lms_site_core_is_free_course( int $course_id ): bool {
     return (float) get_post_meta( $course_id, '_lp_price', true ) <= 0;
 }
 
-/** Identify paid courses that require admin contact before access is granted. */
+/** Identify courses that require admin contact before access is granted. */
 function lms_site_core_is_contact_course( int $course_id ): bool {
-    return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true ) && ! lms_site_core_is_free_course( $course_id );
+    return '1' === (string) get_post_meta( $course_id, '_lms_contact_course', true );
 }
 function lms_site_core_contact_course_price_html( $price_html, $course ) {
 	$course_id = lms_site_core_course_id( $course );
@@ -1586,7 +1586,8 @@ add_action( 'add_meta_boxes_lp_course', 'lms_site_core_add_course_access_meta_bo
 
 function lms_site_core_render_course_access_meta_box( WP_Post $post ): void {
 	wp_nonce_field( 'lms_site_core_course_access', 'lms_site_core_course_access_nonce' );
-	$contact_required = lms_site_core_is_contact_course( $post->ID );
+	// Read the saved flag directly so the editor reflects the admin setting even for free courses.
+	$contact_required = '1' === (string) get_post_meta( $post->ID, '_lms_contact_course', true );
 	?>
 	<label>
 		<input type="checkbox" name="_lms_contact_course" value="1" <?php checked( $contact_required ); ?>>
@@ -2276,7 +2277,7 @@ function lms_site_core_auto_enroll_free_courses_for_user( int $user_id ): void {
     if ( $user_id <= 0 || ! get_userdata( $user_id ) ) { return; }
     $courses = get_posts( array( 'post_type' => 'lp_course', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids' ) );
     foreach ( $courses as $course_id ) {
-        if ( lms_site_core_is_free_course( (int) $course_id ) ) { lms_site_core_enroll_user_in_course( $user_id, (int) $course_id ); }
+        if ( lms_site_core_is_free_course( (int) $course_id ) && ! lms_site_core_is_contact_course( (int) $course_id ) ) { lms_site_core_enroll_user_in_course( $user_id, (int) $course_id ); }
     }
 }
 

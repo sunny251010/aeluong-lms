@@ -184,3 +184,4 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Donation mobile đồng bộ nền/chữ với Khóa học và Liên hệ.
 - [x] Thêm nút Đăng xuất dưới avatar trong mobile drawer.
 - [ ] Smoke test guest, logged-in và logout ở viewport mobile trên production.
+- [x] Sửa Course access metabox để checkbox giữ đúng trạng thái đã lưu với cả course free (2026-09-13).
