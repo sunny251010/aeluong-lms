@@ -139,3 +139,7 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 
 - Không có thay đổi DB hoặc option.
 - Logout chỉ tạo URL runtime bằng API native của WordPress.
+## Lesson popup comments
+
+- Khong co thay doi schema hoac migration.
+- Comment bai hoc chi bi an o frontend; du lieu comment hien co duoc giu nguyen.

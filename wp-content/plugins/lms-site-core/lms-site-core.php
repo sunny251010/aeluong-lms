@@ -29,6 +29,70 @@ function lms_site_core_redirect_home_to_courses(): void {
 add_action( 'template_redirect', 'lms_site_core_redirect_home_to_courses', 20 );
 
 /**
+ * Return the native LearnPress course archive URL.
+ */
+function lms_site_core_course_archive_url(): string {
+	$courses_page = get_page_by_path( 'courses', OBJECT, 'page' );
+
+	if ( $courses_page instanceof WP_Post && 'publish' === $courses_page->post_status ) {
+		return (string) get_permalink( $courses_page );
+	}
+
+	$archive_url = get_post_type_archive_link( 'lp_course' );
+
+	if ( $archive_url ) {
+		return (string) $archive_url;
+	}
+
+	if ( function_exists( 'learn_press_get_page_link' ) ) {
+		$archive_url = learn_press_get_page_link( 'courses' );
+
+		if ( $archive_url ) {
+			return (string) $archive_url;
+		}
+	}
+
+	return home_url( '/courses/' );
+}
+
+/**
+ * Keep lesson comments out of the learner view without deleting stored comments.
+ */
+function lms_site_core_disable_lesson_comments( $open, $post_id = 0 ) {
+	$post_id = $post_id ? absint( $post_id ) : get_the_ID();
+
+	return 'lp_lesson' === get_post_type( $post_id ) ? false : $open;
+}
+add_filter( 'comments_open', 'lms_site_core_disable_lesson_comments', 20, 2 );
+
+/**
+ * Prevent LearnPress from rendering a lesson comment area when old comments exist.
+ */
+function lms_site_core_hide_lesson_comment_count( $count, $post_id = 0 ) {
+	$post_id = $post_id ? absint( $post_id ) : get_the_ID();
+
+	return 'lp_lesson' === get_post_type( $post_id ) ? 0 : $count;
+}
+add_filter( 'get_comments_number', 'lms_site_core_hide_lesson_comment_count', 20, 2 );
+
+/**
+ * Use the project-owned popup header so learners can return to the course archive.
+ */
+function lms_site_core_override_lesson_popup_header_template( $template, $template_name, $template_path = '' ) {
+	$is_popup_header = 'popup-header.php' === basename( (string) $template_name );
+	$is_item_template = false !== strpos( (string) $template_name, 'single-course/content-item' );
+
+	if ( ! $is_popup_header || ! $is_item_template ) {
+		return $template;
+	}
+
+	$override = plugin_dir_path( __FILE__ ) . 'templates/single-course/content-item/popup-header.php';
+
+	return file_exists( $override ) ? $override : $template;
+}
+add_filter( 'learn_press_locate_template', 'lms_site_core_override_lesson_popup_header_template', 20, 3 );
+
+/**
  * Detect the LearnPress checkout page without removing or disabling it.
  */
 function lms_site_core_is_checkout_request(): bool {

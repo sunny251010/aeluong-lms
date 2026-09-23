@@ -254,3 +254,9 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 
 - Metabox Course access đọc trực tiếp meta _lms_contact_course để trạng thái checkbox phản ánh đúng dữ liệu đã lưu, kể cả khi course đang có giá 0.
 - Logic frontend dùng cờ liên hệ làm ưu tiên: course free không tick vẫn được học tự do; course free đã tick Contact sẽ hiển thị Liên hệ và yêu cầu admin cấp quyền.
+
+## Lesson popup navigation
+
+- Binh luan trong bai hoc LearnPress duoc tat o lop `lms-site-core` qua `comments_open` va `get_comments_number` cho post type `lp_lesson`.
+- Binh luan cu khong bi xoa khoi database va van co the quan ly trong wp-admin.
+- Template popup header cua LearnPress duoc override trong plugin de tieu de khoa hoc va nut quay lai tro ve page slug `courses`; neu page nay khong ton tai thi dung native LearnPress archive.

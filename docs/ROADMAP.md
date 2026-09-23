@@ -185,3 +185,5 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Thêm nút Đăng xuất dưới avatar trong mobile drawer.
 - [ ] Smoke test guest, logged-in và logout ở viewport mobile trên production.
 - [x] Sửa Course access metabox để checkbox giữ đúng trạng thái đã lưu với cả course free (2026-09-13).
+
+- [x] Tat binh luan trong bai hoc va dua tieu de/nut quay lai cua lesson popup ve `/courses/`.
