@@ -260,3 +260,12 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - Binh luan trong bai hoc LearnPress duoc tat o lop `lms-site-core` qua `comments_open` va `get_comments_number` cho post type `lp_lesson`.
 - Binh luan cu khong bi xoa khoi database va van co the quan ly trong wp-admin.
 - Template popup header cua LearnPress duoc override trong plugin de tieu de khoa hoc va nut quay lai tro ve page slug `courses`; neu page nay khong ton tai thi dung native LearnPress archive.
+
+## Course card instructor link
+
+- Ten instructor tren card khoa hoc duoc render dang plain text qua hook `learn-press/layout/list-courses/item/section/bottom`.
+- Viec nay chi ap dung cho course card list, khong thay doi trang instructor hoac quyen admin.
+## Child stylesheet cache
+
+- Child theme version CSS su dung `filemtime(style.css)` de moi lan deploy CSS co URL moi.
+- Donation trong mobile drawer ep `background`, `background-color` va `background-image` trong suot de khong bi Kadence ghi de.

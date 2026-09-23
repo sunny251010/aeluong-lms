@@ -1313,6 +1313,8 @@ body.lms-site-core-contact-page .lms-site-core-contact-form textarea:focus {
   #mobile-menu > .lms-mobile-action-item.lms-donation-menu-item > a,
   #mobile-menu > .lms-mobile-action-item.lms-logout-menu-item > a {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
     border-color: transparent !important;
     border-radius: 0;
     color: #fff !important;

@@ -187,3 +187,6 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Sửa Course access metabox để checkbox giữ đúng trạng thái đã lưu với cả course free (2026-09-13).
 
 - [x] Tat binh luan trong bai hoc va dua tieu de/nut quay lai cua lesson popup ve `/courses/`.
+
+- [x] Vo hieu hoa link instructor tren card khoa hoc; giu ten hien thi dang plain text.
+- [x] Cache-bust CSS child theme va sua nen Donation trong mobile drawer tren thiet bi that.

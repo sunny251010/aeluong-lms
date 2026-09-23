@@ -1876,6 +1876,25 @@ function lms_site_core_course_archive_section_bottom( array $section_bottom, $co
 add_filter( 'learn-press/layout/list-courses/item/section/bottom', 'lms_site_core_course_archive_section_bottom', 30, 3 );
 
 /**
+ * Keep the instructor name as plain text on course cards.
+ */
+function lms_site_core_disable_course_card_instructor_link( array $section_bottom, $course, $settings ): array {
+	if ( empty( $section_bottom['instructor'] ) ) {
+		return $section_bottom;
+	}
+
+	$section_bottom['instructor'] = preg_replace(
+		'~<a\b[^>]*>(.*?)</a>~s',
+		'<span class="lms-site-core-course-instructor">$1</span>',
+		$section_bottom['instructor'],
+		1
+	);
+
+	return $section_bottom;
+}
+add_filter( 'learn-press/layout/list-courses/item/section/bottom', 'lms_site_core_disable_course_card_instructor_link', 40, 3 );
+
+/**
  * Render archive actions according to login and enrollment state.
  */
 function lms_site_core_course_archive_cta( array $sections, $course, $settings ): array {
