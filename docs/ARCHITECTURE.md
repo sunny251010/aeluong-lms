@@ -277,3 +277,12 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 - Moi phuong thuc la chuyen khoan (ngan hang, STK, chu tai khoan, QR/logo) hoac link thanh toan HTTPS (PayPal, MoMo, ...). Site chi hien thi thong tin/mo link, khong xu ly giao dich, khong luu payment secret va khong xac minh thanh toan.
 - Option modal cu duoc giu de Zalo va thong tin bank/QR da nhap khong bi mat; du lieu bank cu duoc hien nhu phuong thuc dau tien cho den khi admin luu danh sach moi. So Zalo van chinh trong man hinh moi va duoc dung chung cho Contact, sticky va access modal.
 - Trang ung-ho nap Noto Sans rieng; noi dung co co chu 16px, anh QR/logo 320x320px tren desktop va co lai theo viewport tren mobile.
+
+
+## Login AJAX và CDN cache (2026-09-23)
+
+- Trang public có thể bị GoDaddy/Cloudflare cache dài ngày, nên không nhúng login nonce vào HTML nữa.
+- Frontend lấy nonce mới ngay trước khi gửi credential qua action `lms_site_core_login_nonce`; response của action dùng `nocache_headers()`.
+- Login handler luôn trả JSON khi nonce hết hạn. Frontend đọc response dạng text rồi parse có kiểm soát, không hiển thị parser error kỹ thuật cho học viên.
+- Nếu `admin-ajax.php` bị gateway/WAF trả HTML hoặc lỗi mạng, form tự động fallback sang `wp-login.php` native và quay lại URL đang xem.
+- Asset JavaScript dùng `filemtime()` để đổi URL sau mỗi lần deploy; production vẫn cần purge page cache để HTML tham chiếu asset mới.

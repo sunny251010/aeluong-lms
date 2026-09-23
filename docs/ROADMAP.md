@@ -197,3 +197,12 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 - [x] Them admin UI de quan ly nhieu phuong thuc chuyen khoan hoac payment link va shortcode public.
 - [x] Chinh typography Noto Sans 16px va anh QR/logo 320x320px responsive tren trang Ung ho.
 - [ ] Tao thu cong page `Ung ho` slug `ung-ho`, them shortcode `[lms_site_support_methods]`, sau do smoke test tren local va production.
+
+
+### Login ổn định khi page bị CDN cache - 2026-09-23
+
+- [x] Lấy login nonce mới từ endpoint no-cache thay vì nonce nằm trong HTML bị cache.
+- [x] Trả JSON rõ ràng khi nonce hết hạn và ẩn parser error kỹ thuật khỏi giao diện học viên.
+- [x] Fallback sang `wp-login.php` native khi `admin-ajax.php` trả HTML/lỗi gateway.
+- [x] Cache-bust JavaScript bằng `filemtime()` và test Chrome flow thường + HTML-response fallback trên local.
+- [ ] Deploy staging, purge cache và smoke test lại guest login trước khi đưa lên production.

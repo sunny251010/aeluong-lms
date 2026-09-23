@@ -157,38 +157,153 @@ function lmsSiteCoreInit() {
 		}
 	});
 
+	function createTransportError(message) {
+		var error = new Error(message || state.networkError);
+		error.isTransportError = true;
+		return error;
+	}
+
+	function parseJsonResponse(response) {
+		return response.text().then(function (text) {
+			var payload;
+
+			try {
+				payload = JSON.parse(text);
+			} catch (parseError) {
+				throw createTransportError(state.serverError || state.networkError);
+			}
+
+			return {
+				payload: payload,
+				status: response.status
+			};
+		});
+	}
+
+	function requestFreshLoginNonce() {
+		var nonceData = new FormData();
+		nonceData.append('action', 'lms_site_core_login_nonce');
+
+		return fetch(state.ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			cache: 'no-store',
+			headers: {
+				'Accept': 'application/json',
+				'X-Requested-With': 'XMLHttpRequest'
+			},
+			body: nonceData
+		})
+			.then(parseJsonResponse)
+			.then(function (result) {
+				if (!result.payload.success || !result.payload.data || !result.payload.data.nonce) {
+					throw createTransportError(state.sessionError || state.networkError);
+				}
+
+				return result.payload.data.nonce;
+			})
+			.catch(function (error) {
+				if (error && error.isTransportError) {
+					throw error;
+				}
+
+				throw createTransportError(state.networkError);
+			});
+	}
+
+	function submitNativeLogin(credentials) {
+		var nativeForm = document.createElement('form');
+
+		function appendField(name, value) {
+			var field = document.createElement('input');
+			field.type = 'hidden';
+			field.name = name;
+			field.value = value;
+			nativeForm.appendChild(field);
+		}
+
+		nativeForm.method = 'post';
+		nativeForm.action = state.loginUrl || '/wp-login.php';
+		nativeForm.hidden = true;
+		document.cookie = 'wordpress_test_cookie=WP%20Cookie%20check; path=/; SameSite=Lax';
+		appendField('log', credentials.login);
+		appendField('pwd', credentials.password);
+		appendField('redirect_to', window.location.href.split('#')[0]);
+		appendField('testcookie', '1');
+		appendField('wp-submit', 'Đăng nhập');
+
+		if (credentials.remember) {
+			appendField('rememberme', 'forever');
+		}
+
+		document.body.appendChild(nativeForm);
+		nativeForm.submit();
+	}
+
 	if (loginForm) {
 		loginForm.addEventListener('submit', function (event) {
 			event.preventDefault();
 
 			var submitButton = loginForm.querySelector('button[type="submit"]');
-			var formData = new FormData(loginForm);
-			formData.append('action', 'lms_site_core_login');
-			formData.append('nonce', state.nonce || '');
+			var credentials = {
+				login: loginForm.elements.login ? loginForm.elements.login.value : '',
+				password: loginForm.elements.password ? loginForm.elements.password.value : '',
+				remember: Boolean(loginForm.elements.remember && loginForm.elements.remember.checked)
+			};
+
+			if (loginMessage) {
+				loginMessage.hidden = true;
+				loginMessage.textContent = '';
+			}
 
 			if (submitButton) {
 				submitButton.disabled = true;
 				submitButton.textContent = 'Đang đăng nhập...';
 			}
 
-			fetch(state.ajaxUrl, {
-				method: 'POST',
-				credentials: 'same-origin',
-				body: formData
-			})
-				.then(function (response) {
-					return response.json();
+			requestFreshLoginNonce()
+				.then(function (nonce) {
+					var formData = new FormData(loginForm);
+					formData.append('action', 'lms_site_core_login');
+					formData.append('nonce', nonce);
+
+					return fetch(state.ajaxUrl, {
+						method: 'POST',
+						credentials: 'same-origin',
+						cache: 'no-store',
+						headers: {
+							'Accept': 'application/json',
+							'X-Requested-With': 'XMLHttpRequest'
+						},
+						body: formData
+					});
 				})
-				.then(function (payload) {
+				.then(parseJsonResponse)
+				.then(function (result) {
+					var payload = result.payload;
+
 					if (!payload.success) {
-						throw new Error(payload.data && payload.data.message ? payload.data.message : state.loginError);
+						var message = payload.data && payload.data.message ? payload.data.message : state.loginError;
+
+						if (400 === result.status || 401 === result.status) {
+							var authError = new Error(message);
+							authError.isAuthError = true;
+							throw authError;
+						}
+
+						throw createTransportError(message || state.serverError);
 					}
 
 					window.location.reload();
 				})
 				.catch(function (error) {
+					if (!error || !error.isAuthError) {
+						submitNativeLogin(credentials);
+						return;
+					}
+
 					if (loginMessage) {
-						loginMessage.textContent = error.message || state.networkError;
+						loginMessage.textContent = error.message || state.loginError;
 						loginMessage.hidden = false;
 					}
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LMS Site Core
  * Description: Project-owned LMS behavior that complements LearnPress without replacing it.
- * Version: 0.21.1
+ * Version: 0.21.2
  * Author: LMS Project
  * Text Domain: lms-site-core
  */
@@ -1979,12 +1979,16 @@ function lms_site_core_enqueue_frontend_assets(): void {
 	}
 
 	$current_course_id = is_singular( 'lp_course' ) ? get_queried_object_id() : 0;
+	$frontend_script   = __DIR__ . '/assets/js/lms-site-core.js';
+	$script_version    = file_exists( $frontend_script )
+		? (string) filemtime( $frontend_script )
+		: '0.21.2';
 
 	wp_enqueue_script(
 		'lms-site-core-frontend',
 		plugin_dir_url( __FILE__ ) . 'assets/js/lms-site-core.js',
 		array(),
-		'0.10.1',
+		$script_version,
 		true
 	);
 
@@ -1993,7 +1997,7 @@ function lms_site_core_enqueue_frontend_assets(): void {
 		'lmsSiteCore',
 		array(
 			'ajaxUrl'             => admin_url( 'admin-ajax.php' ),
-			'nonce'               => wp_create_nonce( 'lms_site_core_login' ),
+			'loginUrl'            => wp_login_url(),
 			'isLoggedIn'          => is_user_logged_in(),
 			'currentCourseId'     => $current_course_id,
 			'currentCourseAccess' => $current_course_id > 0
@@ -2005,6 +2009,8 @@ function lms_site_core_enqueue_frontend_assets(): void {
 			'zaloUrl'             => lms_site_core_zalo_url(),
 			'loginError'          => 'Thông tin đăng nhập chưa đúng.',
 			'networkError'        => 'Không thể kết nối. Vui lòng thử lại.',
+			'sessionError'        => 'Phiên đăng nhập đã hết hạn. Vui lòng thử lại.',
+			'serverError'         => 'Máy chủ đang bận. Hệ thống đang chuyển sang trang đăng nhập dự phòng.',
 		)
 	);
 }
@@ -2237,10 +2243,36 @@ function lms_site_core_render_frontend_dialogs(): void {
 add_action( 'wp_footer', 'lms_site_core_render_frontend_dialogs', 20 );
 
 /**
+ * Issue a fresh login nonce from an uncached endpoint.
+ */
+function lms_site_core_ajax_login_nonce(): void {
+	nocache_headers();
+
+	wp_send_json_success(
+		array(
+			'nonce' => wp_create_nonce( 'lms_site_core_login' ),
+		)
+	);
+}
+add_action( 'wp_ajax_nopriv_lms_site_core_login_nonce', 'lms_site_core_ajax_login_nonce' );
+add_action( 'wp_ajax_lms_site_core_login_nonce', 'lms_site_core_ajax_login_nonce' );
+
+/**
  * Handle the project login form with WordPress authentication.
  */
 function lms_site_core_ajax_login(): void {
-	check_ajax_referer( 'lms_site_core_login', 'nonce' );
+	nocache_headers();
+
+	$nonce = sanitize_text_field( wp_unslash( $_POST['nonce'] ?? '' ) );
+	if ( ! $nonce || ! wp_verify_nonce( $nonce, 'lms_site_core_login' ) ) {
+		wp_send_json_error(
+			array(
+				'code'    => 'session_expired',
+				'message' => 'Phiên đăng nhập đã hết hạn. Vui lòng thử lại.',
+			),
+			403
+		);
+	}
 
 	$login    = sanitize_text_field( wp_unslash( $_POST['login'] ?? '' ) );
 	$password = (string) wp_unslash( $_POST['password'] ?? '' );
