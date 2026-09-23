@@ -143,3 +143,9 @@ Tạo và lưu Lesson draft ID 59 qua wp-admin, chứa bảng IPA để đối c
 
 - Khong co thay doi schema hoac migration.
 - Comment bai hoc chi bi an o frontend; du lieu comment hien co duoc giu nguyen.
+
+## DB change: support methods page - 2026-09-23
+
+- Them WordPress option `lms_site_core_support_methods`, la array cac method: `type` (`bank_transfer` hoac `payment_link`), `title`, `description`, `bank_name`, `account`, `holder`, `image_id`, `action_label`, `action_url`.
+- Khong co custom table, migration schema, payment credential, transaction, webhook hay order moi.
+- Option cu `lms_site_core_donation_settings` duoc giu nguyen cho so Zalo va fallback du lieu bank/QR cu. Man hinh moi van ghi `zalo_phone` vao option nay; luu settings moi se tao option moi, khong xoa option cu.

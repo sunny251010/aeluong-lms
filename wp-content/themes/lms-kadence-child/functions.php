@@ -7,6 +7,7 @@ add_action( 'wp_enqueue_scripts', function (): void {
 	$parent_theme     = wp_get_theme( get_template() );
 	$child_theme      = wp_get_theme();
 	$child_stylesheet = get_stylesheet_directory() . '/style.css';
+	$dependencies     = [ 'kadence-parent' ];
 	$child_version    = file_exists( $child_stylesheet )
 		? (string) filemtime( $child_stylesheet )
 		: $child_theme->get( 'Version' );
@@ -18,10 +19,20 @@ add_action( 'wp_enqueue_scripts', function (): void {
 		$parent_theme->get( 'Version' )
 	);
 
+	if ( is_page( 'ung-ho' ) ) {
+		wp_enqueue_style(
+			'lms-noto-sans',
+			'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap',
+			[],
+			null
+		);
+		$dependencies[] = 'lms-noto-sans';
+	}
+
 	wp_enqueue_style(
 		'lms-kadence-child',
 		get_stylesheet_directory_uri() . '/style.css',
-		[ 'kadence-parent' ],
+		$dependencies,
 		$child_version
 	);
 } );

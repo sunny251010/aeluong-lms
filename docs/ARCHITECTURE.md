@@ -269,3 +269,11 @@ Donation modal đọc cấu hình từ option lms_site_core_donation_settings. A
 
 - Child theme version CSS su dung `filemtime(style.css)` de moi lan deploy CSS co URL moi.
 - Donation trong mobile drawer ep `background`, `background-color` va `background-image` trong suot de khong bi Kadence ghi de.
+
+## Trang ung ho nhieu phuong thuc (2026-09-23)
+
+- Action Ung ho tren Secondary Navigation va mobile drawer dieu huong cung tab den page thu cong slug `ung-ho`; khong con mo modal.
+- LMS Site Core cung cap shortcode `[lms_site_support_methods]` de render cac phuong thuc. Admin quan ly tai `Settings > LMS Site Core`.
+- Moi phuong thuc la chuyen khoan (ngan hang, STK, chu tai khoan, QR/logo) hoac link thanh toan HTTPS (PayPal, MoMo, ...). Site chi hien thi thong tin/mo link, khong xu ly giao dich, khong luu payment secret va khong xac minh thanh toan.
+- Option modal cu duoc giu de Zalo va thong tin bank/QR da nhap khong bi mat; du lieu bank cu duoc hien nhu phuong thuc dau tien cho den khi admin luu danh sach moi. So Zalo van chinh trong man hinh moi va duoc dung chung cho Contact, sticky va access modal.
+- Trang ung-ho nap Noto Sans rieng; noi dung co co chu 16px, anh QR/logo 320x320px tren desktop va co lai theo viewport tren mobile.

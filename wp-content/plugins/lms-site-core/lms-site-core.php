@@ -10,6 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/includes/lesson-authoring.php';
+require_once __DIR__ . '/includes/support-methods.php';
 
 /**
  * Send the site homepage to LearnPress course archive.
@@ -430,7 +431,7 @@ function lms_site_core_add_donation_settings_page(): void {
 		'LMS Site Core',
 		'manage_options',
 		'lms-site-core-donation',
-		'lms_site_core_render_donation_settings_page'
+		'lms_site_core_render_support_methods_settings_page'
 	);
 }
 add_action( 'admin_menu', 'lms_site_core_add_donation_settings_page', 41 );
@@ -2066,7 +2067,7 @@ function lms_site_core_mark_action_menu_items( array $items, $args ): array {
 	foreach ( $items as $item ) {
 		$fragment = lms_site_core_menu_item_fragment( $item );
 
-		if ( 'lms-support-modal' === $fragment ) {
+		if ( lms_site_core_is_support_menu_item( $item ) ) {
 			$item->classes = array_values( array_unique( array_merge( (array) $item->classes, array( 'lms-donation-menu-item' ) ) ) );
 		} elseif ( 'lms-login-modal' === $fragment ) {
 			$class = is_user_logged_in() ? 'lms-user-menu-item' : 'lms-login-menu-item';
@@ -2088,8 +2089,9 @@ function lms_site_core_secondary_link_attributes( array $atts, $item, $args, int
 
 	$fragment = lms_site_core_menu_item_fragment( $item );
 
-	if ( 'lms-support-modal' === $fragment ) {
-		$atts['data-lms-support-trigger'] = '1';
+	if ( lms_site_core_is_support_menu_item( $item ) ) {
+		$atts['href'] = lms_site_core_support_page_url();
+		unset( $atts['data-lms-support-trigger'] );
 	} elseif ( 'lms-login-modal' === $fragment ) {
 		if ( is_user_logged_in() ) {
 			$user = wp_get_current_user();
@@ -2138,8 +2140,8 @@ function lms_site_core_append_mobile_action_items( string $items, $args ): strin
 		return $items;
 	}
 
-	if ( false === strpos( $items, 'lms-support-modal' ) ) {
-		$items .= '<li class="menu-item lms-mobile-action-item lms-donation-menu-item"><a href="#lms-support-modal" data-lms-support-trigger="1">&#7910;ng h&#7897;</a></li>';
+	if ( false === strpos( $items, 'lms-donation-menu-item' ) ) {
+		$items .= '<li class="menu-item lms-mobile-action-item lms-donation-menu-item"><a href="' . esc_url( lms_site_core_support_page_url() ) . '">&#7910;ng h&#7897;</a></li>';
 	}
 
 	$has_account_item = false !== strpos( $items, 'lms-login-modal' )
@@ -2224,20 +2226,6 @@ function lms_site_core_render_frontend_dialogs(): void {
 			<h2 id="lms-access-title">Chưa được cấp quyền học</h2>
 			<p class="lms-site-core-modal-intro" data-lms-access-message>Tài khoản của bạn chưa được cấp quyền cho khóa học này.</p>
 			<a class="lms-site-core-zalo-button" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener">Liên hệ qua Zalo</a>
-		</div>
-	</div>
-	<?php $donation = lms_site_core_get_donation_settings(); ?>
-	<div id="lms-support-modal" class="lms-site-core-modal" role="dialog" aria-modal="true" aria-labelledby="lms-support-title" hidden>
-		<div class="lms-site-core-modal-panel lms-site-core-support-panel">
-			<button type="button" class="lms-site-core-modal-close" data-lms-modal-close aria-label="Đóng">×</button>
-			<h2 id="lms-support-title"><?php echo esc_html( $donation['title'] ); ?></h2>
-			<p class="lms-site-core-modal-intro"><?php echo esc_html( $donation['description'] ); ?></p>
-			<img class="lms-site-core-bank-placeholder" src="<?php echo esc_url( $donation['qr_image_url'] ); ?>" alt="Ảnh QR thông tin ngân hàng">
-			<div class="lms-site-core-bank-details">
-				<strong><?php echo esc_html( $donation['notice'] ); ?></strong>
-				<span><?php echo esc_html( $donation['bank_name'] . ' · ' . $donation['account'] ); ?></span>
-				<span><?php echo esc_html( 'Chủ tài khoản: ' . $donation['holder'] ); ?></span>
-			</div>
 		</div>
 	</div>
 	<a class="lms-site-core-zalo-sticky" href="<?php echo esc_url( lms_site_core_zalo_url() ); ?>" target="_blank" rel="noopener" aria-label="Liên hệ Zalo">

@@ -190,3 +190,10 @@ Chi tiết: [audit local](LOCAL_ROADMAP_AUDIT.md), [hướng dẫn soạn bài](
 
 - [x] Vo hieu hoa link instructor tren card khoa hoc; giu ten hien thi dang plain text.
 - [x] Cache-bust CSS child theme va sua nen Donation trong mobile drawer tren thiet bi that.
+
+### Trang ung ho nhieu phuong thuc - 2026-09-23
+
+- [x] Thay Donation modal bang action den page `/ung-ho/` trong cung tab.
+- [x] Them admin UI de quan ly nhieu phuong thuc chuyen khoan hoac payment link va shortcode public.
+- [x] Chinh typography Noto Sans 16px va anh QR/logo 320x320px responsive tren trang Ung ho.
+- [ ] Tao thu cong page `Ung ho` slug `ung-ho`, them shortcode `[lms_site_support_methods]`, sau do smoke test tren local va production.

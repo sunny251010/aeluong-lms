@@ -10,7 +10,9 @@ Trước khi code:
 - Với yêu cầu có thể dùng plugin có sẵn, phải kiểm tra khả năng dùng plugin trước; nêu rõ plugin nào, nguồn/độ tin cậy, phạm vi bản miễn phí, dependency và rủi ro. Không tự cài hoặc active plugin khi người dùng chưa chốt.
 - Chỉ tiếp tục code sau khi người dùng đã chọn phương án hoặc xác nhận đề xuất. Nếu yêu cầu đã chỉ rõ phương án duy nhất và không có rủi ro đáng kể thì có thể thực hiện luôn.
 - Khi người dùng đổi hướng, dừng phần đang làm, kiểm tra thay đổi chưa commit và hoàn tác riêng phần do Codex vừa tạo nếu phần đó không còn phù hợp; không đụng vào thay đổi có sẵn của người dùng.
-- Cần thiết thì cứ tạo datatest rồi tự test như người thật được nhé, adm,acc admin: admin, pass: admin123
+- Cần thiết thì cứ tạo datatest rồi tự test như người thật được nhé, local: acc admin: admin, pass: admin123
+stagin: https://1270583.us28.myftpupload.com/
+tk: admin26, pw: Bang@2002
 
 Không được:
 - sửa WordPress core

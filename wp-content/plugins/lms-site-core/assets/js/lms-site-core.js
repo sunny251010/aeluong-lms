@@ -5,7 +5,6 @@ function lmsSiteCoreInit() {
 	var state = window.lmsSiteCore || {};
 	var loginModal = document.getElementById('lms-login-modal');
 	var accessModal = document.getElementById('lms-access-modal');
-	var supportModal = document.getElementById('lms-support-modal');
 	var accessTitle = document.getElementById('lms-access-title');
 	var accessMessage = document.querySelector('[data-lms-access-message]');
 	var loginForm = document.getElementById('lms-site-core-login-form');
@@ -34,7 +33,7 @@ function lmsSiteCoreInit() {
 
 		modal.hidden = true;
 
-		if (loginModal && loginModal.hidden && accessModal && accessModal.hidden && supportModal && supportModal.hidden) {
+		if (loginModal && loginModal.hidden && accessModal && accessModal.hidden) {
 			document.body.classList.remove('lms-site-core-modal-open');
 		}
 	}
@@ -71,10 +70,6 @@ function lmsSiteCoreInit() {
 		openModal(accessModal);
 	}
 
-	function showSupport() {
-		openModal(supportModal);
-	}
-
 	function showRestrictedAccessFromRedirect() {
 		var params = new URLSearchParams(window.location.search);
 
@@ -95,25 +90,17 @@ function lmsSiteCoreInit() {
 	function closeAllModals() {
 		closeModal(loginModal);
 		closeModal(accessModal);
-		closeModal(supportModal);
 	}
 
 	document.addEventListener('click', function (event) {
 		var loginTrigger = event.target.closest('[data-lms-login-trigger]');
 		var courseRequest = event.target.closest('[data-lms-course-request]');
 		var closeTrigger = event.target.closest('[data-lms-modal-close]');
-		var supportTrigger = event.target.closest('[data-lms-support-trigger]');
 		var accountButton = event.target.closest('.lms-site-core-account-link[aria-haspopup="true"]');
 
 		if (loginTrigger) {
 			event.preventDefault();
 			showLogin(state.currentCourseId || 0);
-			return;
-		}
-
-		if (supportTrigger) {
-			event.preventDefault();
-			showSupport();
 			return;
 		}
 
@@ -143,11 +130,6 @@ function lmsSiteCoreInit() {
 
 		if (event.target === accessModal) {
 			closeModal(accessModal);
-			return;
-		}
-
-		if (event.target === supportModal) {
-			closeModal(supportModal);
 			return;
 		}
 
